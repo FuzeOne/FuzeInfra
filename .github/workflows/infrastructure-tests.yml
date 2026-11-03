@@ -96,7 +96,8 @@ jobs:
           tests/test_prometheus_backup_retry.py \
           tests/test_loki_log_alerts.py \
           tests/test_prometheus_rule_quarantine.py \
-          tests/test_alertmanager_storage.py
+          tests/test_alertmanager_storage.py \
+          tests/test_argo_terminate_op_guard.py
 
     - name: Install Docker Compose
       run: |
