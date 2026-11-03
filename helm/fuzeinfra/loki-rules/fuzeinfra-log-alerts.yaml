@@ -112,6 +112,38 @@ groups:
             cannot start. Routed to the repo that owns {{ $labels.namespace }}.
 
       # -----------------------------------------------------------------------
+      # Filesystem I/O errors seen by an application (moved here from FuzeAgent).
+      # FuzeAgent shipped this as a Prometheus rule in
+      # fuzeagent/fuzeagent-incident-alerts. It is a log query, so Prometheus
+      # could not parse it and crash-looped for 15 days (see PrometheusRulesRejected).
+      # Name, labels and annotations are kept so FuzeAgent's incident tooling
+      # (`action: auto-remediate`) sees the same alert. Two fixes over the
+      # original:
+      #   - one alternation instead of `count + count`. Vector `+` drops every
+      #     series present on only one side, so a pod logging only one of the
+      #     two messages never fired;
+      #   - "Bad message" is capitalised the way libc's strerror(EBADMSG) prints
+      #     it. The original lowercase "bad message" never matched that error.
+      # -----------------------------------------------------------------------
+      - alert: PostgresVolumeCorrupted
+        expr: |
+          sum by (namespace, pod) (
+            count_over_time(
+              {namespace=~"fuzeinfra|fuzeagent"}
+                |~ `Input/output error|Bad message`
+              [5m]
+            )
+          ) > 0
+        for: 30s
+        labels:
+          severity: critical
+          component: fuzeinfra-postgres
+          action: auto-remediate
+        annotations:
+          summary: "Filesystem I/O corruption detected on {{ $labels.pod }}"
+          description: "ext4 metadata or inode read error reported in logs on {{ $labels.pod }}. Automated remediation triggered."
+
+      # -----------------------------------------------------------------------
       # A volume that keeps failing to mount. kubelet retries with backoff (at
       # most ~2m apart) and logs every failure, so a persistent failure is a
       # steady stream in the k3s journal. A normal Longhorn attach can fail once
