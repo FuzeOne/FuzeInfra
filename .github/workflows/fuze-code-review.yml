@@ -1,4 +1,4 @@
-# fuze:managed template=fuze-code-review.yml baseline=v1 digest=sha256:525ec7e089ced11ced5da69dcb4394e0c4220c0bfc5a9bc681554d4eee030a03
+# fuze:managed template=fuze-code-review.yml baseline=v1 digest=sha256:33beeabefd158cfd71c91a2db77b3d6e34dd10d0fa2bfca297f1f09f0bd9183f
 name: Fuze Code Review
 
 # THE CANONICAL LLM CODE REVIEW + APPROVAL GATE — now a MANDATORY approve-or-fail check.
@@ -305,12 +305,15 @@ jobs:
             echo "::error title=fuze-code-review::cannot compute the review diff against origin/$BASE_REF"
             exit 1
           fi
-          # Cap the diff handed to the model. The review action runs with the 1M-token
-          # context window on (CLAUDE_CODE_DISABLE_1M_CONTEXT=0 below), so the cap is
-          # generous instead of the old 80k that silently dropped most of a large-but-clean
-          # PR and pushed the model into a low-confidence "comment" — which the verdict
-          # script scores as a FAIL, red-flagging large PRs that had no real findings.
-          DIFF_CAP=600000
+          # Cap the diff handed to the model. The prompt (this diff plus a small wrapper) is
+          # passed to the review action as an env var / CLI arg, and Linux execve limits a
+          # SINGLE arg/env string to MAX_ARG_STRLEN = 131072 bytes: a larger value makes bash
+          # fail to start with "Argument list too long", so the review produces NO verdict
+          # (empty conclusion) and fails closed. Keep the cap well under that limit — 80k was
+          # the old value; 100k leaves ~29k of headroom for the wrapper. A diff longer than
+          # this is truncated and the marker below tells the model truncation is not a finding.
+          # Do NOT raise this toward/over 131072: it regressed large PRs exactly once already.
+          DIFF_CAP=100000
           FULL_BYTES=$(wc -c < /tmp/fulldiff.txt)
           DIFF=$(head -c "$DIFF_CAP" /tmp/fulldiff.txt)
           if [ "$FULL_BYTES" -gt "$DIFF_CAP" ]; then
@@ -450,18 +453,15 @@ jobs:
           # fuze:secret-sourcing CODEX_AUTH_JSON=fleet — provision-llm-vendor-keys.yml; optional ChatGPT subscription auth
           codex-auth-json: ${{ secrets.CODEX_AUTH_JSON }}
           claude-args: '--allowedTools "Read,Grep,Glob"'
-          # Pin the review model and enable the 1M-token context window. Passed via
-          # extra-env (not a step `env:`) because fuze-code-action is a composite and its
-          # inner steps do not reliably inherit caller-step env — see that input's docs.
-          # claude-opus-4-8 is the family's primary Anthropic model (governance/model-registry.md);
-          # on the LiteLLM path the endpoint's "*" catch-all maps any model name to the head
-          # vendor, so the pin is safe on every rung (direct Anthropic honours it literally).
-          # The ladder opus-4.8 → opus-5 → opus-5.5 → fable-5.1 (then the cross-vendor rungs)
-          # is the follow-up; starting here plus the larger diff window resolves the
-          # large-PR false-fail on its own.
+          # Pin the review model. Passed via extra-env (not a step `env:`) because
+          # fuze-code-action is a composite and its inner steps do not reliably inherit
+          # caller-step env — see that input's docs. claude-opus-4-8 is the family's primary
+          # Anthropic model (governance/model-registry.md); on the LiteLLM path the endpoint's
+          # "*" catch-all maps any model name to the head vendor, so the pin is safe on every
+          # rung (direct Anthropic honours it literally). The ladder opus-4.8 → opus-5 →
+          # opus-5.5 → fable-5.1 (then the cross-vendor rungs) is the follow-up.
           extra-env: |
             ANTHROPIC_MODEL=claude-opus-4-8
-            CLAUDE_CODE_DISABLE_1M_CONTEXT=0
           # REVIEW-ONLY SWITCH. Set the repository VARIABLE FUZE_CODE_REVIEW_ONLY=true to
           # review PRs on the Anthropic rungs ONLY: no codex/gemini vendor-CLI install on the
           # runner, no multi-vendor LiteLLM container, and -- the point -- the read-only

@@ -133,7 +133,7 @@ jobs:
         # can run (and post the deliverable check) even when this step errors.
         continue-on-error: true
         if: steps.key-guard.outputs.ok == 'true' && steps.preflight.outputs.ok == 'true'
-        uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13  # v1.0.262
+        uses: anthropics/claude-code-action@d535f5172dec02b204866b393d6b20b9b2aaf98d  # v1.0.266
         env:
           # LiteLLM authenticates `Authorization: Bearer`; the action does not read
           # that from the anthropic_api_key input alone, so the key must ALSO travel

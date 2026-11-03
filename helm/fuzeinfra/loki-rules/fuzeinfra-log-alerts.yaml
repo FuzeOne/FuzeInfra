@@ -1,0 +1,299 @@
+# =============================================================================
+# Loki ruler: log-based alerts that do NOT depend on Prometheus
+# =============================================================================
+# Loaded by Loki's ruler (configmaps-monitoring.yaml `ruler:` block) from the
+# `fuzeinfra-loki-rules` ConfigMap, mounted at /etc/loki-rules/fake/. The tenant
+# directory is `fake` because auth_enabled is false: Loki then files every stream
+# under the single tenant "fake" and ignores the X-Scope-OrgID Promtail sends.
+#
+# WHY THESE EXIST (2026-10-05 .. 10-14 incident). The Prometheus TSDB volume got
+# a corrupt ext4 filesystem after an unclean node reboot. kubelet's mount-time
+# fsck failed 411 times, the Prometheus pod sat in ContainerCreating, and Argo's
+# fuzeinfra-prod sync waited on it for 9 days, blocking every prod deploy. Nothing
+# raised an alert:
+#   - every rule in helm/fuzeinfra/rules/ is evaluated BY Prometheus, which was
+#     the thing that was down;
+#   - deployment-watchdog.yml aborted on each run before its Argo check (#1402).
+# These rules run in Loki and are delivered through Alertmanager, so neither of
+# those failures can silence them. Loki itself cannot alert on its own outage;
+# that half is covered by Prometheus' rules and the watchdog.
+#
+# ROUTING. Loki ruler -> fuzeinfra-alertmanager -> `github-fuze` receiver
+# (severity=critical, values-contabo.yaml) -> crit-alert bridge ->
+# alertmanager-fuze.yml -> an `@fuze` issue in the repo that owns `namespace`
+# -> that repo's @fuze handler (fuze-cluster.yml for FuzeInfra). Every rule sets
+# `namespace` because alertmanager-fuze.yml dedups and routes on
+# (alertname, namespace); a missing namespace collapses unrelated alerts.
+#
+# STREAM LABELS these rules select on are produced by this chart, and
+# tests/test_loki_log_alerts.py fails if one stops being produced:
+#   job="systemd-journal", unit, node  <- Promtail `journal` scrape job
+#   job="kube-events"                  <- kube-event-exporter's Loki receiver
+#   namespace, container, app          <- Promtail `kubernetes-pods` relabels
+#
+# This file is shipped verbatim (.Files.Get, never `tpl`), so the Go-template
+# `{{ $labels.x }}` in annotations reaches Loki untouched.
+# =============================================================================
+groups:
+  - name: fuzeinfra-log-alerts
+    interval: 1m
+    rules:
+      # -----------------------------------------------------------------------
+      # Filesystem corruption. Never noise: a checksum-mismatched extent or a
+      # failed fsck does not heal on retry, and every pod that mounts the volume
+      # fails the same way. The 2026-10-13 corruption would have fired this at
+      # the first mount attempt instead of being found 9 days later.
+      # Three sources, so one missing pipeline (journal mount, event exporter)
+      # cannot blind it. They share one alertname so the @fuze router files a
+      # single issue for the incident.
+      # -----------------------------------------------------------------------
+      - alert: VolumeFilesystemCorrupt
+        expr: |
+          sum by (node) (
+            count_over_time(
+              {job="systemd-journal"}
+                |~ `EXT4-fs error|UNEXPECTED INCONSISTENCY|RUN fsck MANUALLY|found errors on device`
+              [10m]
+            )
+          ) > 0
+        labels:
+          severity: critical
+          namespace: fuzeinfra
+          source: journal
+        annotations:
+          summary: "Filesystem corruption reported in the journal of node {{ $labels.node }}"
+          description: >-
+            The kernel or kubelet on {{ $labels.node }} logged an ext4 error or a
+            failed fsck in the last 10 minutes. Any pod mounting the affected volume
+            will stay in ContainerCreating, and an Argo sync waiting on it blocks
+            every prod deploy. Find the volume with Grafana Explore:
+            {job="systemd-journal", node="{{ $labels.node }}"} |~ "EXT4-fs error|fsck".
+            Repair is a data decision (see helm/fuzeinfra/templates/monitoring.yaml,
+            the Prometheus PVC migration): propose it in a PR, do not repair in place.
+
+      - alert: VolumeFilesystemCorrupt
+        expr: |
+          sum by (pod) (
+            count_over_time(
+              {namespace="longhorn-system", container="longhorn-csi-plugin"}
+                |~ `UNEXPECTED INCONSISTENCY|RUN fsck MANUALLY|found errors on device`
+              [10m]
+            )
+          ) > 0
+        labels:
+          severity: critical
+          namespace: fuzeinfra
+          source: longhorn-csi
+        annotations:
+          summary: "Longhorn CSI plugin {{ $labels.pod }} reports a failed fsck"
+          description: >-
+            NodeStageVolume ran fsck on a Longhorn volume and it reported errors it
+            could not correct. Every replica carries the same filesystem, so a
+            replica rebuild will not fix it. Identify the volume from the plugin log.
+
+      - alert: VolumeFilesystemCorrupt
+        expr: |
+          sum by (namespace, object) (
+            count_over_time(
+              {job="kube-events"}
+                |~ `UNEXPECTED INCONSISTENCY|RUN fsck MANUALLY|found errors on device`
+                | json namespace="involvedObject.namespace", object="involvedObject.name"
+              [10m]
+            )
+          ) > 0
+        labels:
+          severity: critical
+          source: kube-events
+        annotations:
+          summary: "Failed fsck on a volume of {{ $labels.namespace }}/{{ $labels.object }}"
+          description: >-
+            A Kubernetes Event for {{ $labels.namespace }}/{{ $labels.object }} carries
+            fsck failure output: its volume has a corrupt filesystem and the pod
+            cannot start. Routed to the repo that owns {{ $labels.namespace }}.
+
+      # -----------------------------------------------------------------------
+      # Filesystem I/O errors seen by an application (moved here from FuzeAgent).
+      # FuzeAgent shipped this as a Prometheus rule in
+      # fuzeagent/fuzeagent-incident-alerts. It is a log query, so Prometheus
+      # could not parse it and crash-looped for 15 days (see PrometheusRulesRejected).
+      # Name, labels and annotations are kept so FuzeAgent's incident tooling
+      # (`action: auto-remediate`) sees the same alert. Two fixes over the
+      # original:
+      #   - one alternation instead of `count + count`. Vector `+` drops every
+      #     series present on only one side, so a pod logging only one of the
+      #     two messages never fired;
+      #   - "Bad message" is capitalised the way libc's strerror(EBADMSG) prints
+      #     it. The original lowercase "bad message" never matched that error.
+      # -----------------------------------------------------------------------
+      - alert: PostgresVolumeCorrupted
+        expr: |
+          sum by (namespace, pod) (
+            count_over_time(
+              {namespace=~"fuzeinfra|fuzeagent"}
+                |~ `Input/output error|Bad message`
+              [5m]
+            )
+          ) > 0
+        for: 30s
+        labels:
+          severity: critical
+          component: fuzeinfra-postgres
+          action: auto-remediate
+        annotations:
+          summary: "Filesystem I/O corruption detected on {{ $labels.pod }}"
+          description: "ext4 metadata or inode read error reported in logs on {{ $labels.pod }}. Automated remediation triggered."
+
+      # -----------------------------------------------------------------------
+      # A volume that keeps failing to mount. kubelet retries with backoff (at
+      # most ~2m apart) and logs every failure, so a persistent failure is a
+      # steady stream in the k3s journal. A normal Longhorn attach can fail once
+      # or twice while the engine starts; >2 failures in every 15m window for
+      # 30m is past that. Kubernetes Events are deliberately not the source here:
+      # a repeated Event is PATCHed (count++) rather than re-created, so an event
+      # stream does not show persistence.
+      # -----------------------------------------------------------------------
+      - alert: VolumeMountFailing
+        expr: |
+          sum by (node, volume) (
+            count_over_time(
+              {job="systemd-journal", unit=~"k3s.*"}
+                |~ `MountVolume\.(MountDevice|SetUp|WaitForAttach) failed`
+                | regexp `for volume "(?P<volume>[^"]+)"`
+              [15m]
+            )
+          ) > 2
+        for: 30m
+        labels:
+          severity: critical
+          namespace: fuzeinfra
+        annotations:
+          summary: "Volume {{ $labels.volume }} has failed to mount on {{ $labels.node }} for 30m+"
+          description: >-
+            kubelet on {{ $labels.node }} has been failing to mount {{ $labels.volume }}
+            continuously for at least 30 minutes. The pod using it is stuck in
+            ContainerCreating. If it belongs to a chart workload, Argo's sync of that
+            app is waiting on it and every later deploy is queued behind it. Read the
+            full error in the journal: corruption, a stale mount, and a node-affinity
+            mismatch each need a different fix.
+
+      # -----------------------------------------------------------------------
+      # Argo sync operation stuck waiting on resource health. Argo will not start
+      # a new sync while one is in flight, so a single unhealthy resource freezes
+      # every prod deploy behind it (2026-08-30: 37h on Loki; 2026-10-05: 9 days
+      # on Prometheus). Fires when the controller logged the wait both in the last
+      # 15 minutes AND in a 15-minute window 45 minutes earlier, i.e. the same app
+      # has been waiting for at least ~45 minutes. A healthy sync takes ~5 minutes
+      # (CLAUDE.md, SYNC_WAIT_TIMEOUT). This duplicates the watchdog's argo_stuck_op
+      # check on purpose: that check was blind for 9 days when the watchdog itself
+      # kept crashing. The controller logs JSON (checked against prod 2026-11-03:
+      # {"application":"...","level":"info","msg":"...",...}), hence `json`, not
+      # logfmt/regexp.
+      # -----------------------------------------------------------------------
+      - alert: ArgoSyncWaitingOnHealth
+        expr: |
+          (
+            sum by (application) (
+              count_over_time(
+                {namespace="argocd", container="argocd-application-controller"}
+                  |= "waiting for healthy state"
+                  | json application="application"
+                [15m]
+              )
+            ) > 0
+          )
+          and
+          (
+            sum by (application) (
+              count_over_time(
+                {namespace="argocd", container="argocd-application-controller"}
+                  |= "waiting for healthy state"
+                  | json application="application"
+                [15m] offset 45m
+              )
+            ) > 0
+          )
+        labels:
+          severity: critical
+          namespace: fuzeinfra
+        annotations:
+          summary: "Argo sync of {{ $labels.application }} has waited on resource health for 45m+"
+          description: >-
+            Argo's sync operation on {{ $labels.application }} is still waiting for a
+            resource to become healthy, about 45 minutes after it started waiting. No
+            new sync can start until it finishes, so every merge to that app's source
+            is queued. Find the resource named in the controller's
+            "waiting for healthy state of ..." log line and fix why it is unhealthy;
+            terminating the operation alone only re-queues the same wait.
+
+      # -----------------------------------------------------------------------
+      # Argo application-controller silent. It logs on every reconcile, so 30
+      # minutes of silence means it is down or wedged (seen: stuck Terminating for
+      # days). While it is down the Application status stops updating, and
+      # deploy-prod can report success against a stale revision (CLAUDE.md).
+      # -----------------------------------------------------------------------
+      - alert: ArgoControllerSilent
+        expr: |
+          absent_over_time({namespace="argocd", container="argocd-application-controller"}[30m])
+        labels:
+          severity: critical
+          namespace: fuzeinfra
+        annotations:
+          summary: "argocd-application-controller has logged nothing for 30 minutes"
+          description: >-
+            The controller is down, wedged, or stuck Terminating. Application status is
+            frozen while it is, so a green deploy-prod no longer proves anything. Check
+            with cluster-query: -n argocd get pods.
+
+      # -----------------------------------------------------------------------
+      # Prometheus silent: the dead-man for every metric alert. When Prometheus is
+      # down, nothing in helm/fuzeinfra/rules/ is evaluated, so this is the one
+      # signal that says the metric alerts are off. Prometheus logs little when
+      # healthy (head compaction and WAL checkpoint roughly every 2h), hence the
+      # 4h window; anything shorter fires on a quiet, healthy instance.
+      # -----------------------------------------------------------------------
+      - alert: PrometheusSilent
+        expr: |
+          absent_over_time({namespace="fuzeinfra", app="prometheus", container="prometheus"}[4h])
+        labels:
+          severity: critical
+          namespace: fuzeinfra
+        annotations:
+          summary: "Prometheus has logged nothing for 4 hours: metric alerting is likely down"
+          description: >-
+            No log line from the fuzeinfra-prometheus container in 4 hours. A running
+            Prometheus logs at least every ~2h, so it is most likely not running (for
+            example stuck in ContainerCreating on a volume that will not mount). While
+            it is down, no rule in helm/fuzeinfra/rules/ is evaluated.
+
+      # -----------------------------------------------------------------------
+      # Prometheus rejected its config or a rule file. The rule sidecar loads
+      # rule ConfigMaps from EVERY namespace (prometheus.ruleSidecar), so one
+      # consumer's bad expression stops the whole platform's metric alerting.
+      # Seen on prod 2026-11-03: a FuzeAgent rule with a LogQL `|` in a PromQL
+      # expression ("PostgresVolumeCorrupted ... unexpected character: '|'").
+      # Prometheus cannot report this about itself, and a crash-looping one still
+      # logs, so PrometheusSilent does not catch it either. No container matcher:
+      # the line comes from the rule-validator container (a discovered file it
+      # refused to promote) or from prometheus itself (its own config).
+      # -----------------------------------------------------------------------
+      - alert: PrometheusRulesRejected
+        expr: |
+          sum(
+            count_over_time(
+              {namespace="fuzeinfra", app="prometheus"}
+                |~ `msg="Error (loading|reloading) (config|rule)`
+              [15m]
+            )
+          ) > 0
+        labels:
+          severity: critical
+          namespace: fuzeinfra
+        annotations:
+          summary: "Prometheus rejected its configuration or a rule file"
+          description: >-
+            Prometheus logged a config or rule-load error in the last 15 minutes. At
+            startup this is fatal (the pod crash-loops and all metric alerting is
+            off); on reload Prometheus keeps the previous rules and ignores the
+            change. The log line names the file and rule. A file under
+            /etc/prometheus/rules-discovered/ comes from a labeled ConfigMap in
+            another namespace: fix it in the repo that owns that namespace.

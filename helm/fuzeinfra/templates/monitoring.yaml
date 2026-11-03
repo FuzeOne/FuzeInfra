@@ -266,9 +266,24 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- if .Values.prometheus.ruleSidecar.enabled }}
-        # k8s-sidecar: watches ConfigMaps labeled `{{ .Values.prometheus.ruleSidecar.label }}={{ .Values.prometheus.ruleSidecar.labelValue }}`
-        # in {{ .Values.prometheus.ruleSidecar.searchNamespace }}, writes their rule files into the shared rules-discovered
-        # volume, then POSTs to Prometheus /-/reload (enabled via --web.enable-lifecycle).
+        {{- /*
+             DISCOVERED RULES ARE VALIDATED BEFORE PROMETHEUS EVER SEES THEM.
+             The sidecar copies `prometheus_rule` ConfigMaps from EVERY namespace, and
+             Prometheus treats one unparseable rule file as FATAL at startup. On
+             2026-10-13 FuzeAgent shipped a LogQL expression as a Prometheus rule
+             (fuzeagent/fuzeagent-incident-alerts): Prometheus crash-looped 4161 times
+             over 15 days and metric alerting was off for every product.
+             A startup-only check (#1512) was not enough, and that was measured on
+             prod on 2026-11-03. When a reload POST is refused (Prometheus still
+             replaying its WAL, ~2.5 min), the sidecar's watch loop throws and
+             re-lists, re-writing every file, the bad one included, after the check
+             has already run.
+             So the sidecar writes to rules-staging/, which Prometheus never reads, and
+             rule-validator (the Prometheus image, for its promtool) promotes only files
+             that pass `promtool check rules` into rules-discovered/, then triggers the
+             reload itself. A failing file costs its owner their rules, not everyone
+             theirs. Its log line matches the Loki PrometheusRulesRejected rule.
+        */}}
         - name: rule-sidecar
           image: {{ .Values.prometheus.ruleSidecar.image }}
           imagePullPolicy: {{ include "fuzeinfra.pullPolicy" . }}
@@ -278,20 +293,78 @@ spec:
             - name: LABEL_VALUE
               value: {{ .Values.prometheus.ruleSidecar.labelValue | quote }}
             - name: FOLDER
-              value: /etc/prometheus/rules-discovered
+              value: /etc/prometheus/rules-staging
             - name: RESOURCE
               value: configmap
             - name: NAMESPACE
               value: {{ .Values.prometheus.ruleSidecar.searchNamespace | quote }}
             - name: METHOD
               value: WATCH
-            - name: REQ_URL
-              value: http://localhost:9090/-/reload
-            - name: REQ_METHOD
-              value: POST
+            # No REQ_URL: rule-validator triggers /-/reload after promoting a file.
           resources:
             {{- toYaml .Values.prometheus.ruleSidecar.resources | nindent 12 }}
           volumeMounts:
+            - name: rules-staging
+              mountPath: /etc/prometheus/rules-staging
+        - name: rule-validator
+          image: {{ .Values.prometheus.image }}
+          imagePullPolicy: {{ include "fuzeinfra.pullPolicy" . }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              src=/etc/prometheus/rules-staging
+              dst=/etc/prometheus/rules-discovered
+              seen=/tmp/rejected
+              mkdir -p "$seen"
+              pass=0
+              pending=0
+              while :; do
+                changed=0
+                for f in "$src"/*.yaml "$src"/*.yml; do
+                  [ -f "$f" ] || continue
+                  n="${f##*/}"
+                  cmp -s "$f" "$dst/$n" && continue
+                  cmp -s "$f" "$seen/$n" && continue
+                  if out="$(/bin/promtool check rules "$f" 2>&1)"; then
+                    cp "$f" "$dst/.$n.tmp" && mv -f "$dst/.$n.tmp" "$dst/$n"
+                    rm -f "$seen/$n"
+                    echo "level=INFO msg=\"Rule file accepted\" file=$n"
+                    changed=1
+                  else
+                    reason="$(printf '%s' "$out" | tr '\n"' " '")"
+                    echo "level=ERROR msg=\"Error loading rule file, quarantined\" file=$n err=\"$reason\"" >&2
+                    cp "$f" "$seen/$n"
+                    if [ -f "$dst/$n" ]; then rm -f "$dst/$n"; changed=1; fi
+                  fi
+                done
+                for f in "$dst"/*.yaml "$dst"/*.yml; do
+                  [ -f "$f" ] || continue
+                  n="${f##*/}"
+                  if [ ! -f "$src/$n" ]; then rm -f "$f"; changed=1; fi
+                done
+                # Retried until it succeeds, so a change promoted while Prometheus is
+                # still starting is not lost (it also reads them at startup).
+                [ "$changed" = 1 ] && pending=1
+                if [ "$pending" = 1 ]; then
+                  if wget -q -O /dev/null --post-data= http://localhost:9090/-/reload 2>/dev/null; then
+                    pending=0
+                  fi
+                fi
+                [ -n "$VALIDATOR_ONCE" ] && exit 0
+                # Forget rejections hourly so a still-bad file is logged again and
+                # PrometheusRulesRejected keeps firing until its owner fixes it.
+                pass=$((pass + 1))
+                if [ "$pass" -ge 360 ]; then rm -f "$seen"/*; pass=0; fi
+                sleep 10
+              done
+          resources:
+            requests: { cpu: 5m, memory: 16Mi }
+            limits:   { memory: 64Mi }
+          volumeMounts:
+            - name: rules-staging
+              mountPath: /etc/prometheus/rules-staging
+              readOnly: true
             - name: rules-discovered
               mountPath: /etc/prometheus/rules-discovered
         {{- end }}
@@ -316,6 +389,8 @@ spec:
         {{- if .Values.prometheus.ruleSidecar.enabled }}
         - name: rules-discovered
           emptyDir: {}
+        - name: rules-staging
+          emptyDir: {}
         {{- end }}
         - name: data
           persistentVolumeClaim:
@@ -339,16 +414,57 @@ spec:
     - name: http
       port: {{ .Values.alertmanager.port }}
       targetPort: 9093
+{{- if .Values.alertmanager.persistence.enabled }}
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fuzeinfra-alertmanager-data
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+    {{- include "fuzeinfra.selectorLabels" (dict "component" "alertmanager" "root" $) | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+    argocd.argoproj.io/sync-options: Prune=false
+spec:
+  accessModes: ["ReadWriteOnce"]
+  {{- include "fuzeinfra.storageClass" . | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.alertmanager.storage }}
+{{- end }}
+---
+{{- /*
+     A Deployment, not a StatefulSet (changed 2026-11-03). The StatefulSet's
+     volumeClaimTemplate volume (data-fuzeinfra-alertmanager-0, Longhorn
+     pvc-d16da7af) lost 2 of its 3 replicas around the 2026-10-13 unclean reboot.
+     Longhorn could not schedule new ones ("disks are unavailable"), and attach
+     failed with "volume ... is not ready for workloads". The pod sat in
+     ContainerCreating for 15 days. Two consequences:
+       - nothing could deliver any alert, the Loki rules included;
+       - Argo's fuzeinfra-prod sync waited on it ("waiting for healthy state of
+         apps/StatefulSet/fuzeinfra-alertmanager"), queueing every later deploy.
+     A StatefulSet cannot drop its volumeClaimTemplate (immutable, and hidden from
+     Argo by the kind-wide ignoreDifferences), so the only Git fix is a different
+     kind. Alertmanager's on-disk state is silences plus the notification log used
+     to dedupe repeats, so emptyDir is the default: a restart loses silences and
+     may re-send one notification per open alert. Set alertmanager.persistence.enabled
+     for a standalone, expandable PVC (the Loki pattern) instead.
+     The old PVC is left alone (STS-created, so not Argo-managed). Remove it and
+     its Longhorn volume by hand once this is confirmed healthy.
+*/}}
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: fuzeinfra-alertmanager
   labels:
     {{- include "fuzeinfra.labels" . | nindent 4 }}
 spec:
-  serviceName: fuzeinfra-alertmanager
   replicas: 1
+  # Recreate: never two Alertmanagers sending the same notification, and the
+  # optional PVC is ReadWriteOnce.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "fuzeinfra.selectorLabels" (dict "component" "alertmanager" "root" $) | nindent 6 }}
@@ -398,6 +514,13 @@ spec:
         - name: config
           configMap:
             name: fuzeinfra-alertmanager-config
+        - name: data
+          {{- if .Values.alertmanager.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: fuzeinfra-alertmanager-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
         {{- if .Values.alertmanager.githubBridge.enabled }}
         # Mounted as a FILE (not env) because Alertmanager does not substitute env
         # vars in its config; the webhook receiver references it via
@@ -409,17 +532,6 @@ spec:
               - key: {{ .Values.alertmanager.githubBridge.tokenSecretKey | default "CRIT_BRIDGE_TOKEN" }}
                 path: crit_bridge_token
         {{- end }}
-  volumeClaimTemplates:
-    - apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        {{- include "fuzeinfra.storageClass" . | nindent 8 }}
-        resources:
-          requests:
-            storage: {{ .Values.alertmanager.storage }}
 {{- end }}
 
 {{- /* ===================== Grafana ===================== */ -}}
@@ -820,6 +932,12 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        {{- if .Values.loki.ruler.enabled }}
+        # Loki reads its main config once at start, so a ruler change in Git must
+        # roll the pod. Rule FILES are re-read by the ruler on its own poll and do
+        # not need this.
+        checksum/loki-ruler: {{ toJson .Values.loki.ruler | sha256sum }}
+        {{- end }}
       labels:
         {{- include "fuzeinfra.labels" . | nindent 8 }}
         {{- include "fuzeinfra.selectorLabels" (dict "component" "loki" "root" $) | nindent 8 }}
@@ -856,6 +974,13 @@ spec:
               mountPath: /etc/loki
             - name: data
               mountPath: /loki
+            {{- if .Values.loki.ruler.enabled }}
+            # NOT under /etc/loki: that is a read-only ConfigMap volume, and the
+            # kubelet cannot create a nested mount point inside it.
+            - name: rules
+              mountPath: /etc/loki-rules/fake
+              readOnly: true
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /ready
@@ -884,6 +1009,11 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: fuzeinfra-loki-data
+        {{- if .Values.loki.ruler.enabled }}
+        - name: rules
+          configMap:
+            name: fuzeinfra-loki-rules
+        {{- end }}
 {{- end }}
 
 {{- /* ===================== Promtail (DaemonSet) ===================== */ -}}
@@ -936,6 +1066,20 @@ spec:
             - name: containers
               mountPath: /var/lib/docker/containers
               readOnly: true
+            {{- if .Values.promtail.journal.enabled }}
+            # Read by the `journal` scrape job (configmaps-monitoring.yaml). Both
+            # journald locations are mounted because which one holds the journal
+            # depends on the node's Storage= setting.
+            - name: journal-persistent
+              mountPath: /var/log/journal
+              readOnly: true
+            - name: journal-volatile
+              mountPath: /run/log/journal
+              readOnly: true
+            - name: machine-id
+              mountPath: /etc/machine-id
+              readOnly: true
+            {{- end }}
       volumes:
         - name: config
           configMap:
@@ -949,6 +1093,21 @@ spec:
         - name: containers
           hostPath:
             path: /var/lib/docker/containers
+        {{- if .Values.promtail.journal.enabled }}
+        # Same shape as Grafana's upstream promtail chart: no hostPath `type`, so
+        # nothing is created or type-checked on the host. machine-id is needed
+        # because with `path` unset the journal reader opens LOCAL journals only,
+        # i.e. /var/log/journal/<machine-id>/; without the host's id it finds none.
+        - name: journal-persistent
+          hostPath:
+            path: /var/log/journal
+        - name: journal-volatile
+          hostPath:
+            path: /run/log/journal
+        - name: machine-id
+          hostPath:
+            path: /etc/machine-id
+        {{- end }}
 {{- end }}
 
 {{- /* ===================== Node Exporter (DaemonSet) ===================== */ -}}

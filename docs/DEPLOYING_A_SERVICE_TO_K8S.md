@@ -310,6 +310,16 @@ data:
   avoid collisions with other projects and with FuzeInfra's own dashboards.
 - Do not modify shared rules in `monitoring-shared/prometheus/rules/`.
 - Do not change the Grafana admin password or delete shared datasources.
+- A `prometheus_rule: "1"` ConfigMap must hold **PromQL only**, and should pass
+  `promtool check rules <file>` before you ship it. A log query
+  (`{namespace="..."} |= "..."`) is LogQL and Prometheus cannot parse it. On
+  2026-10-13 one such expression kept the shared Prometheus crash-looping for 15
+  days, which turned off metric alerting for every product. Every discovered file
+  now goes through `promtool check rules` before Prometheus sees it. A file that
+  fails is not loaded; it is logged and alerted on as `PrometheusRulesRejected`.
+  A broken file now loses only its own rules, but it still loses all of them,
+  including the valid rules in the same file. Log-based alerts belong in Loki: ask
+  FuzeInfra (via `@fuze`) to add the rule to `helm/fuzeinfra/loki-rules/`.
 
 ---
 

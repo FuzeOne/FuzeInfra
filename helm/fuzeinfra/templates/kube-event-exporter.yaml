@@ -1,0 +1,153 @@
+{{- /* =================== kube-event-exporter =================== */}}
+{{- /*
+  Ships Kubernetes Events into Loki as {job="kube-events"} JSON lines.
+
+  WHY. Events are where kubelet and the CSI driver report why a pod cannot start
+  (FailedMount with the full fsck output, FailedAttachVolume, ...), and the API
+  server keeps them for only ~1 hour. Promtail cannot read Events: it tails files.
+  During the 2026-10-05..10-14 Prometheus outage the diagnosis came from Events
+  read by hand days later; with this exporter they are searchable in Grafana and
+  the VolumeFilesystemCorrupt rule (loki-rules/fuzeinfra-log-alerts.yaml) reads
+  them.
+
+  The exporter sees an Event when it is CREATED. Kubernetes PATCHes a repeated
+  Event (count++) instead of creating a new one, so this stream shows that
+  something happened, not how long it has been happening. Persistence alerts use
+  the kubelet journal instead (VolumeMountFailing).
+
+  RBAC is read-only: events, plus `get` on the object kinds the exporter looks up
+  to attach labels and annotations. Secrets and ConfigMaps are deliberately NOT
+  listed: Event lines land in Loki, which far more people can read than the API.
+*/}}
+{{- if and .Values.kubeEventExporter.enabled .Values.loki.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fuzeinfra-kube-event-exporter
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Namespace }}-fuzeinfra-kube-event-exporter
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["", "events.k8s.io"]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources:
+      - pods
+      - nodes
+      - namespaces
+      - services
+      - persistentvolumes
+      - persistentvolumeclaims
+    verbs: ["get"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - statefulsets
+      - daemonsets
+      - replicasets
+    verbs: ["get"]
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Namespace }}-fuzeinfra-kube-event-exporter
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Namespace }}-fuzeinfra-kube-event-exporter
+subjects:
+  - kind: ServiceAccount
+    name: fuzeinfra-kube-event-exporter
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fuzeinfra-kube-event-exporter-config
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    logLevel: {{ .Values.kubeEventExporter.logLevel | quote }}
+    logFormat: json
+    # Events older than this at startup are skipped, so a restart does not
+    # replay the last hour of Events into Loki as duplicates.
+    maxEventAgeSeconds: 60
+    route:
+      routes:
+        - match:
+            - receiver: loki
+    receivers:
+      - name: loki
+        loki:
+          # The stream label the Loki rules select on. tests/test_loki_log_alerts.py
+          # fails if this and the rules disagree.
+          streamLabels:
+            job: kube-events
+          url: http://fuzeinfra-loki:{{ .Values.loki.port }}/loki/api/v1/push
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fuzeinfra-kube-event-exporter
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+spec:
+  # One replica: two would export every Event twice.
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "fuzeinfra.selectorLabels" (dict "component" "kube-event-exporter" "root" $) | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ toJson .Values.kubeEventExporter | sha256sum }}
+      labels:
+        {{- include "fuzeinfra.labels" . | nindent 8 }}
+        {{- include "fuzeinfra.selectorLabels" (dict "component" "kube-event-exporter" "root" $) | nindent 8 }}
+    spec:
+      serviceAccountName: fuzeinfra-kube-event-exporter
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+      containers:
+        - name: kube-event-exporter
+          image: {{ .Values.kubeEventExporter.image }}
+          imagePullPolicy: {{ include "fuzeinfra.pullPolicy" . }}
+          args:
+            - -conf=/data/config.yaml
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config
+              mountPath: /data
+              readOnly: true
+          {{- with .Values.kubeEventExporter.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- include "fuzeinfra.durableToleration" $ | nindent 6 }}
+      volumes:
+        - name: config
+          configMap:
+            name: fuzeinfra-kube-event-exporter-config
+{{- end }}

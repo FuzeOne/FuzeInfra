@@ -785,6 +785,11 @@ alertmanager:
   enabled: true
   image: prom/alertmanager:latest
   port: 9093
+  # Off: data (silences + notification log) lives in an emptyDir. On: a standalone
+  # PVC `fuzeinfra-alertmanager-data` of `storage`. See templates/monitoring.yaml
+  # for why this is no longer a StatefulSet volumeClaimTemplate.
+  persistence:
+    enabled: false
   storage: 1Gi
   # GitHub @fuze bridge (ADDITIVE, off by default). When enabled, a read-only
   # secret file is mounted at /etc/alertmanager/secrets/crit_bridge_token so a
@@ -838,6 +843,12 @@ loki:
   enabled: true
   image: grafana/loki:3.2.0
   port: 3100
+  # Loki ruler: evaluates loki-rules/*.yaml and sends alerts to Alertmanager.
+  # These are the only alerts that keep working while Prometheus is down, so
+  # they are the dead-man for the metric rules in rules/. Off = Loki raises
+  # nothing (the state before 2026-11, when the ruler had no rules to load).
+  ruler:
+    enabled: true
   # Size of the STANDALONE PVC `fuzeinfra-loki-data` (monitoring.yaml). Loki runs as
   # a Deployment (strategy: Recreate) precisely so this value is live: a standalone
   # PVC is expandable, unlike a StatefulSet volumeClaimTemplate, so changing this in
@@ -1035,6 +1046,25 @@ backups:
 promtail:
   enabled: true
   image: grafana/promtail:3.2.0
+  # Ship each node's systemd journal (kernel, k3s/kubelet). Needed by the
+  # VolumeFilesystemCorrupt and VolumeMountFailing Loki rules: kernel ext4
+  # errors and kubelet mount failures appear nowhere else in Loki.
+  journal:
+    enabled: true
+
+kubeEventExporter:
+  # Kubernetes Events -> Loki ({job="kube-events"}). Events expire from the API
+  # server after ~1h; this keeps them for Loki's retention and feeds the
+  # VolumeFilesystemCorrupt rule. k8s-only, like kube-state-metrics.
+  enabled: true
+  image: ghcr.io/resmoio/kubernetes-event-exporter:v1.7
+  logLevel: warn
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
 
 tempo:
   # Distributed-tracing backend (Grafana Tempo, single-binary/local-storage

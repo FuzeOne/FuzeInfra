@@ -75,33 +75,80 @@ jobs:
             exit 0
           fi
 
+          # Pin every write below to THE operation this job was dispatched for.
+          #
+          # 2026-11-03 (run 41599096895): Step 1 terminated a stale op at 5a20309 at
+          # 07:52:25; Argo auto-sync started the fresh op at fa92f09 — the very fix
+          # the stale one was blocking — at 07:52:26. Step 1's re-check saw
+          # phase=Running, which was now the NEW op, so Step 2 removed its .operation
+          # and Step 3 marked it Failed. Argo's automated sync never retries a
+          # revision whose sync failed, so prod stayed on the old revision with no
+          # operation running and nothing left to notice.
+          #
+          # So: identify the op by its startedAt, stop the moment a different op is
+          # Running, and make Steps 2-3 JSON patches whose leading `test` op makes
+          # the API server reject them atomically if the op changed in between —
+          # no check-then-write window.
+          started=$(kubectl -n argocd get application "$APP" \
+                      -o jsonpath='{.status.operationState.startedAt}' 2>/dev/null || echo "")
+          if [ -z "$started" ]; then
+            echo "::error::Running operation has no startedAt, so it cannot be told apart from a fresh one; refusing to touch it."
+            exit 1
+          fi
+          orig_op=$(kubectl -n argocd get application "$APP" -o jsonpath='{.operation}' 2>/dev/null || echo "")
+          echo "Stale operation: startedAt=$started"
+
+          # 0 = the op we were dispatched for is still Running.
+          # 1 = it is gone (terminated, finished, or replaced by a new op).
+          still_stale() {
+            local p s
+            p=$(kubectl -n argocd get application "$APP" \
+                  -o jsonpath='{.status.operationState.phase}' 2>/dev/null || echo "")
+            s=$(kubectl -n argocd get application "$APP" \
+                  -o jsonpath='{.status.operationState.startedAt}' 2>/dev/null || echo "")
+            echo "phase: $p  startedAt: $s"
+            if [ "$s" != "$started" ]; then
+              echo "A new operation started at $s; it is not the stale one (startedAt $started). Leaving it alone."
+              return 1
+            fi
+            [ "$p" = "Running" ]
+          }
+
+          # A rejected `test` patch means the op changed underneath us: success if
+          # the stale op is gone, failure only if it is somehow still Running.
+          guarded_patch() {
+            if kubectl -n argocd patch application "$APP" --type=json -p "$1"; then
+              return 0
+            fi
+            if still_stale; then
+              echo "::error::patch failed while the stale operation is still Running"
+              exit 1
+            fi
+            echo "Patch rejected because the operation changed; the stale one is gone."
+            exit 0
+          }
+
           echo "=== Step 1: argocd app terminate-op (core mode) ==="
           argocd login --core
           argocd app terminate-op "$APP" --core 2>&1 || echo "terminate-op returned non-zero"
 
           sleep 5
           echo "=== State after terminate-op ==="
-          phase2=$(kubectl -n argocd get application "$APP" \
-                     -o jsonpath='{.status.operationState.phase}' 2>/dev/null || echo "")
-          echo "phase: $phase2"
-
-          if [ "$phase2" != "Running" ]; then
-            echo "terminate-op succeeded — phase is now $phase2"
+          if ! still_stale; then
+            echo "terminate-op succeeded."
             exit 0
           fi
 
           echo "=== Step 2: clear .operation field to stop retries ==="
-          kubectl -n argocd patch application "$APP" \
-            --type=json \
-            -p '[{"op":"remove","path":"/operation"}]' 2>&1 || echo "remove /operation returned non-zero"
+          if [ -n "$orig_op" ]; then
+            guarded_patch "[{\"op\":\"test\",\"path\":\"/operation\",\"value\":${orig_op}},{\"op\":\"remove\",\"path\":\"/operation\"}]"
+          else
+            echo "No .operation to clear."
+          fi
 
           sleep 3
-          phase3=$(kubectl -n argocd get application "$APP" \
-                     -o jsonpath='{.status.operationState.phase}' 2>/dev/null || echo "")
-          echo "phase after clearing operation: $phase3"
-
-          if [ "$phase3" != "Running" ]; then
-            echo "Clearing .operation succeeded — phase is now $phase3"
+          if ! still_stale; then
+            echo "Clearing .operation succeeded."
             exit 0
           fi
 
@@ -115,10 +162,9 @@ jobs:
           # progress" and Step 2 has nothing to remove (2026-10-14, run 38537354426,
           # fuzeinfra-prod stuck behind a crash-looping StatefulSet). `status` is an
           # ordinary field of the main resource here, so patch it there. The patch
-          # touches only status.operationState.{phase,message}.
-          kubectl -n argocd patch application "$APP" \
-            --type=merge \
-            -p '{"status":{"operationState":{"phase":"Failed","message":"Force-terminated by CI: stale operation at old revision was blocking new syncs"}}}'
+          # touches only status.operationState.{phase,message}, and only while
+          # startedAt is still the stale op's.
+          guarded_patch "[{\"op\":\"test\",\"path\":\"/status/operationState/startedAt\",\"value\":\"${started}\"},{\"op\":\"add\",\"path\":\"/status/operationState/phase\",\"value\":\"Failed\"},{\"op\":\"add\",\"path\":\"/status/operationState/message\",\"value\":\"Force-terminated by CI: stale operation at old revision was blocking new syncs\"}]"
 
           sleep 3
           echo "=== Final state ==="

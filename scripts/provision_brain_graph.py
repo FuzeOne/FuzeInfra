@@ -55,7 +55,7 @@ def provision_brain_graph(brain_id: str, scope: str = "agent", organization_id: 
             b.updated_at = datetime()
         RETURN b.id AS id, b.scope AS scope
         """
-        result = session.run(init_brain_cypher, brain_id=brain_id, scope=scope, organization_id=organization_id).single()
+        session.run(init_brain_cypher, brain_id=brain_id, scope=scope, organization_id=organization_id).single()
         logger.info(f"✅ Provisioned Neo4j graph partition for Brain [{brain_id}] (scope={scope})")
 
     driver.close()
