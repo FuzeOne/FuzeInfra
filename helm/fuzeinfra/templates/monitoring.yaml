@@ -219,35 +219,6 @@ spec:
         - name: prometheus
           image: {{ .Values.prometheus.image }}
           imagePullPolicy: {{ include "fuzeinfra.pullPolicy" . }}
-          {{- if .Values.prometheus.ruleSidecar.enabled }}
-          # QUARANTINE UNPARSEABLE DISCOVERED RULES BEFORE STARTING. The rule sidecar
-          # copies rule ConfigMaps from EVERY namespace into rules-discovered/, and
-          # Prometheus treats one unparseable rule file as FATAL at startup. On
-          # 2026-10-13 FuzeAgent shipped a LogQL expression as a Prometheus rule
-          # (fuzeagent/fuzeagent-incident-alerts); Prometheus crash-looped 4161 times
-          # over 15 days and all metric alerting, for every product, was off.
-          # Each discovered file is checked with the image's own promtool; a file that
-          # fails is renamed out of the rule_files glob, so it costs its owner their
-          # rules instead of costing everyone theirs. The log line matches the Loki
-          # PrometheusRulesRejected rule, which files the @fuze issue.
-          # On a live /-/reload a bad file is NOT fatal (Prometheus keeps the old
-          # rules and logs the error), so start-up is the only place this is needed.
-          # Our own rules/ are not filtered: promtool gates them in CI.
-          command:
-            - /bin/sh
-            - -c
-            - |
-              for f in /etc/prometheus/rules-discovered/*.yaml /etc/prometheus/rules-discovered/*.yml; do
-                [ -f "$f" ] || continue
-                if ! out="$(/bin/promtool check rules "$f" 2>&1)"; then
-                  reason="$(printf '%s' "$out" | tr '\n"' " '")"
-                  echo "level=ERROR msg=\"Error loading rule file, quarantined\" file=$f err=\"$reason\"" >&2
-                  mv -f "$f" "$f.rejected"
-                fi
-              done
-              exec /bin/prometheus "$@"
-            - prometheus
-          {{- end }}
           args:
             - '--config.file=/etc/prometheus/prometheus.yml'
             - '--storage.tsdb.path=/prometheus'
@@ -295,9 +266,24 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- if .Values.prometheus.ruleSidecar.enabled }}
-        # k8s-sidecar: watches ConfigMaps labeled `{{ .Values.prometheus.ruleSidecar.label }}={{ .Values.prometheus.ruleSidecar.labelValue }}`
-        # in {{ .Values.prometheus.ruleSidecar.searchNamespace }}, writes their rule files into the shared rules-discovered
-        # volume, then POSTs to Prometheus /-/reload (enabled via --web.enable-lifecycle).
+        {{- /*
+             DISCOVERED RULES ARE VALIDATED BEFORE PROMETHEUS EVER SEES THEM.
+             The sidecar copies `prometheus_rule` ConfigMaps from EVERY namespace, and
+             Prometheus treats one unparseable rule file as FATAL at startup. On
+             2026-10-13 FuzeAgent shipped a LogQL expression as a Prometheus rule
+             (fuzeagent/fuzeagent-incident-alerts): Prometheus crash-looped 4161 times
+             over 15 days and metric alerting was off for every product.
+             A startup-only check (#1512) was not enough, and that was measured on
+             prod on 2026-11-03. When a reload POST is refused (Prometheus still
+             replaying its WAL, ~2.5 min), the sidecar's watch loop throws and
+             re-lists, re-writing every file, the bad one included, after the check
+             has already run.
+             So the sidecar writes to rules-staging/, which Prometheus never reads, and
+             rule-validator (the Prometheus image, for its promtool) promotes only files
+             that pass `promtool check rules` into rules-discovered/, then triggers the
+             reload itself. A failing file costs its owner their rules, not everyone
+             theirs. Its log line matches the Loki PrometheusRulesRejected rule.
+        */}}
         - name: rule-sidecar
           image: {{ .Values.prometheus.ruleSidecar.image }}
           imagePullPolicy: {{ include "fuzeinfra.pullPolicy" . }}
@@ -307,20 +293,78 @@ spec:
             - name: LABEL_VALUE
               value: {{ .Values.prometheus.ruleSidecar.labelValue | quote }}
             - name: FOLDER
-              value: /etc/prometheus/rules-discovered
+              value: /etc/prometheus/rules-staging
             - name: RESOURCE
               value: configmap
             - name: NAMESPACE
               value: {{ .Values.prometheus.ruleSidecar.searchNamespace | quote }}
             - name: METHOD
               value: WATCH
-            - name: REQ_URL
-              value: http://localhost:9090/-/reload
-            - name: REQ_METHOD
-              value: POST
+            # No REQ_URL: rule-validator triggers /-/reload after promoting a file.
           resources:
             {{- toYaml .Values.prometheus.ruleSidecar.resources | nindent 12 }}
           volumeMounts:
+            - name: rules-staging
+              mountPath: /etc/prometheus/rules-staging
+        - name: rule-validator
+          image: {{ .Values.prometheus.image }}
+          imagePullPolicy: {{ include "fuzeinfra.pullPolicy" . }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              src=/etc/prometheus/rules-staging
+              dst=/etc/prometheus/rules-discovered
+              seen=/tmp/rejected
+              mkdir -p "$seen"
+              pass=0
+              pending=0
+              while :; do
+                changed=0
+                for f in "$src"/*.yaml "$src"/*.yml; do
+                  [ -f "$f" ] || continue
+                  n="${f##*/}"
+                  cmp -s "$f" "$dst/$n" && continue
+                  cmp -s "$f" "$seen/$n" && continue
+                  if out="$(/bin/promtool check rules "$f" 2>&1)"; then
+                    cp "$f" "$dst/.$n.tmp" && mv -f "$dst/.$n.tmp" "$dst/$n"
+                    rm -f "$seen/$n"
+                    echo "level=INFO msg=\"Rule file accepted\" file=$n"
+                    changed=1
+                  else
+                    reason="$(printf '%s' "$out" | tr '\n"' " '")"
+                    echo "level=ERROR msg=\"Error loading rule file, quarantined\" file=$n err=\"$reason\"" >&2
+                    cp "$f" "$seen/$n"
+                    if [ -f "$dst/$n" ]; then rm -f "$dst/$n"; changed=1; fi
+                  fi
+                done
+                for f in "$dst"/*.yaml "$dst"/*.yml; do
+                  [ -f "$f" ] || continue
+                  n="${f##*/}"
+                  if [ ! -f "$src/$n" ]; then rm -f "$f"; changed=1; fi
+                done
+                # Retried until it succeeds, so a change promoted while Prometheus is
+                # still starting is not lost (it also reads them at startup).
+                [ "$changed" = 1 ] && pending=1
+                if [ "$pending" = 1 ]; then
+                  if wget -q -O /dev/null --post-data= http://localhost:9090/-/reload 2>/dev/null; then
+                    pending=0
+                  fi
+                fi
+                [ -n "$VALIDATOR_ONCE" ] && exit 0
+                # Forget rejections hourly so a still-bad file is logged again and
+                # PrometheusRulesRejected keeps firing until its owner fixes it.
+                pass=$((pass + 1))
+                if [ "$pass" -ge 360 ]; then rm -f "$seen"/*; pass=0; fi
+                sleep 10
+              done
+          resources:
+            requests: { cpu: 5m, memory: 16Mi }
+            limits:   { memory: 64Mi }
+          volumeMounts:
+            - name: rules-staging
+              mountPath: /etc/prometheus/rules-staging
+              readOnly: true
             - name: rules-discovered
               mountPath: /etc/prometheus/rules-discovered
         {{- end }}
@@ -344,6 +388,8 @@ spec:
             name: fuzeinfra-prometheus-rules
         {{- if .Values.prometheus.ruleSidecar.enabled }}
         - name: rules-discovered
+          emptyDir: {}
+        - name: rules-staging
           emptyDir: {}
         {{- end }}
         - name: data
