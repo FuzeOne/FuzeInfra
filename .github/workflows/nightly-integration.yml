@@ -156,7 +156,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Auto-fix → DRAFT PR (never auto-merge)
-        uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13  # v1.0.262
+        uses: anthropics/claude-code-action@d535f5172dec02b204866b393d6b20b9b2aaf98d  # v1.0.266
         env:
           # Route through LiteLLM for cross-provider failover; no provider key held here.
           ANTHROPIC_BASE_URL: http://litellm.fuzeinfra.svc.cluster.local:4000
