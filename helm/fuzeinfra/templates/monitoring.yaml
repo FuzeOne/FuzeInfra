@@ -219,6 +219,35 @@ spec:
         - name: prometheus
           image: {{ .Values.prometheus.image }}
           imagePullPolicy: {{ include "fuzeinfra.pullPolicy" . }}
+          {{- if .Values.prometheus.ruleSidecar.enabled }}
+          # QUARANTINE UNPARSEABLE DISCOVERED RULES BEFORE STARTING. The rule sidecar
+          # copies rule ConfigMaps from EVERY namespace into rules-discovered/, and
+          # Prometheus treats one unparseable rule file as FATAL at startup. On
+          # 2026-10-13 FuzeAgent shipped a LogQL expression as a Prometheus rule
+          # (fuzeagent/fuzeagent-incident-alerts); Prometheus crash-looped 4161 times
+          # over 15 days and all metric alerting, for every product, was off.
+          # Each discovered file is checked with the image's own promtool; a file that
+          # fails is renamed out of the rule_files glob, so it costs its owner their
+          # rules instead of costing everyone theirs. The log line matches the Loki
+          # PrometheusRulesRejected rule, which files the @fuze issue.
+          # On a live /-/reload a bad file is NOT fatal (Prometheus keeps the old
+          # rules and logs the error), so start-up is the only place this is needed.
+          # Our own rules/ are not filtered: promtool gates them in CI.
+          command:
+            - /bin/sh
+            - -c
+            - |
+              for f in /etc/prometheus/rules-discovered/*.yaml /etc/prometheus/rules-discovered/*.yml; do
+                [ -f "$f" ] || continue
+                if ! out="$(/bin/promtool check rules "$f" 2>&1)"; then
+                  reason="$(printf '%s' "$out" | tr '\n"' " '")"
+                  echo "level=ERROR msg=\"Error loading rule file, quarantined\" file=$f err=\"$reason\"" >&2
+                  mv -f "$f" "$f.rejected"
+                fi
+              done
+              exec /bin/prometheus "$@"
+            - prometheus
+          {{- end }}
           args:
             - '--config.file=/etc/prometheus/prometheus.yml'
             - '--storage.tsdb.path=/prometheus'
@@ -820,6 +849,12 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+        {{- if .Values.loki.ruler.enabled }}
+        # Loki reads its main config once at start, so a ruler change in Git must
+        # roll the pod. Rule FILES are re-read by the ruler on its own poll and do
+        # not need this.
+        checksum/loki-ruler: {{ toJson .Values.loki.ruler | sha256sum }}
+        {{- end }}
       labels:
         {{- include "fuzeinfra.labels" . | nindent 8 }}
         {{- include "fuzeinfra.selectorLabels" (dict "component" "loki" "root" $) | nindent 8 }}
@@ -856,6 +891,13 @@ spec:
               mountPath: /etc/loki
             - name: data
               mountPath: /loki
+            {{- if .Values.loki.ruler.enabled }}
+            # NOT under /etc/loki: that is a read-only ConfigMap volume, and the
+            # kubelet cannot create a nested mount point inside it.
+            - name: rules
+              mountPath: /etc/loki-rules/fake
+              readOnly: true
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /ready
@@ -884,6 +926,11 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: fuzeinfra-loki-data
+        {{- if .Values.loki.ruler.enabled }}
+        - name: rules
+          configMap:
+            name: fuzeinfra-loki-rules
+        {{- end }}
 {{- end }}
 
 {{- /* ===================== Promtail (DaemonSet) ===================== */ -}}
@@ -936,6 +983,20 @@ spec:
             - name: containers
               mountPath: /var/lib/docker/containers
               readOnly: true
+            {{- if .Values.promtail.journal.enabled }}
+            # Read by the `journal` scrape job (configmaps-monitoring.yaml). Both
+            # journald locations are mounted because which one holds the journal
+            # depends on the node's Storage= setting.
+            - name: journal-persistent
+              mountPath: /var/log/journal
+              readOnly: true
+            - name: journal-volatile
+              mountPath: /run/log/journal
+              readOnly: true
+            - name: machine-id
+              mountPath: /etc/machine-id
+              readOnly: true
+            {{- end }}
       volumes:
         - name: config
           configMap:
@@ -949,6 +1010,21 @@ spec:
         - name: containers
           hostPath:
             path: /var/lib/docker/containers
+        {{- if .Values.promtail.journal.enabled }}
+        # Same shape as Grafana's upstream promtail chart: no hostPath `type`, so
+        # nothing is created or type-checked on the host. machine-id is needed
+        # because with `path` unset the journal reader opens LOCAL journals only,
+        # i.e. /var/log/journal/<machine-id>/; without the host's id it finds none.
+        - name: journal-persistent
+          hostPath:
+            path: /var/log/journal
+        - name: journal-volatile
+          hostPath:
+            path: /run/log/journal
+        - name: machine-id
+          hostPath:
+            path: /etc/machine-id
+        {{- end }}
 {{- end }}
 
 {{- /* ===================== Node Exporter (DaemonSet) ===================== */ -}}
