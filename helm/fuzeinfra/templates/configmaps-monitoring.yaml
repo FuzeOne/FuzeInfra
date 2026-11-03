@@ -322,9 +322,40 @@ data:
 
     ruler:
       alertmanager_url: http://fuzeinfra-alertmanager:{{ .Values.alertmanager.port }}
+      {{- if .Values.loki.ruler.enabled }}
+      # Until this block existed the ruler had an Alertmanager URL and nothing to
+      # evaluate, so Loki raised no alert at all. Rules come from the
+      # fuzeinfra-loki-rules ConfigMap (loki-rules/*.yaml), mounted read-only at
+      # <directory>/fake/ (tenant "fake" because auth_enabled is false).
+      # Explicit `local` storage also keeps rules out of the S3 bucket that
+      # common.storage would otherwise select when loki.s3.enabled is on.
+      enable_api: true
+      storage:
+        type: local
+        local:
+          directory: /etc/loki-rules
+      # Scratch space the ruler rewrites rules into; must be writable, so it
+      # lives on the data volume rather than under the read-only ConfigMap.
+      rule_path: /loki/rules-temp
+      {{- end }}
 
     analytics:
       reporting_enabled: false
+{{- end }}
+
+{{- if and .Values.loki.enabled .Values.loki.ruler.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fuzeinfra-loki-rules
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+data:
+  {{- range $path, $_ := .Files.Glob "loki-rules/*.yaml" }}
+  {{ base $path }}: |
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}
 {{- end }}
 
 {{- if .Values.promtail.enabled }}
@@ -390,7 +421,14 @@ data:
               - __meta_kubernetes_pod_annotation_kubernetes_io_config_hash
               - __meta_kubernetes_pod_container_name
             target_label: __path__
-      # System journal logs from nodes (if systemd available)
+      {{- if .Values.promtail.journal.enabled }}
+      # System journal (kernel, k3s/kubelet, systemd units) from every node.
+      # This job existed for a long time with NO journal mounted into the
+      # DaemonSet, so it read nothing: kernel EXT4 errors and kubelet mount
+      # failures never reached Loki. The mounts are in monitoring.yaml, under the
+      # same promtail.journal.enabled gate. With `path` unset Promtail reads the
+      # default locations, /var/log/journal (persistent) and /run/log/journal
+      # (volatile), so either journald storage mode works.
       - job_name: journal
         journal:
           max_age: 12h
@@ -399,6 +437,11 @@ data:
         pipeline_stages:
           - labeldrop:
               - filename
+          # Debug priority is the bulk of k3s journal volume and nothing alerts on it.
+          - match:
+              selector: '{level="debug"}'
+              action: drop
+              drop_counter_reason: journal_debug
         relabel_configs:
           - source_labels: ['__journal__systemd_unit']
             target_label: unit
@@ -406,6 +449,7 @@ data:
             target_label: node
           - source_labels: ['__journal_priority_keyword']
             target_label: level
+      {{- end }}
 {{- end }}
 
 {{- if .Values.grafana.enabled }}

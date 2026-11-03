@@ -93,7 +93,9 @@ jobs:
           tests/test_workload_identity_rbac.py \
           tests/test_consumer_appproject_policy.py \
           tests/test_networkpolicy_edge.py \
-          tests/test_prometheus_backup_retry.py
+          tests/test_prometheus_backup_retry.py \
+          tests/test_loki_log_alerts.py \
+          tests/test_prometheus_rule_quarantine.py
 
     - name: Install Docker Compose
       run: |
