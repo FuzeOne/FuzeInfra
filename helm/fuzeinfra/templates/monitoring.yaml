@@ -414,16 +414,57 @@ spec:
     - name: http
       port: {{ .Values.alertmanager.port }}
       targetPort: 9093
+{{- if .Values.alertmanager.persistence.enabled }}
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fuzeinfra-alertmanager-data
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+    {{- include "fuzeinfra.selectorLabels" (dict "component" "alertmanager" "root" $) | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: keep
+    argocd.argoproj.io/sync-options: Prune=false
+spec:
+  accessModes: ["ReadWriteOnce"]
+  {{- include "fuzeinfra.storageClass" . | nindent 2 }}
+  resources:
+    requests:
+      storage: {{ .Values.alertmanager.storage }}
+{{- end }}
+---
+{{- /*
+     A Deployment, not a StatefulSet (changed 2026-11-03). The StatefulSet's
+     volumeClaimTemplate volume (data-fuzeinfra-alertmanager-0, Longhorn
+     pvc-d16da7af) lost 2 of its 3 replicas around the 2026-10-13 unclean reboot.
+     Longhorn could not schedule new ones ("disks are unavailable"), and attach
+     failed with "volume ... is not ready for workloads". The pod sat in
+     ContainerCreating for 15 days. Two consequences:
+       - nothing could deliver any alert, the Loki rules included;
+       - Argo's fuzeinfra-prod sync waited on it ("waiting for healthy state of
+         apps/StatefulSet/fuzeinfra-alertmanager"), queueing every later deploy.
+     A StatefulSet cannot drop its volumeClaimTemplate (immutable, and hidden from
+     Argo by the kind-wide ignoreDifferences), so the only Git fix is a different
+     kind. Alertmanager's on-disk state is silences plus the notification log used
+     to dedupe repeats, so emptyDir is the default: a restart loses silences and
+     may re-send one notification per open alert. Set alertmanager.persistence.enabled
+     for a standalone, expandable PVC (the Loki pattern) instead.
+     The old PVC is left alone (STS-created, so not Argo-managed). Remove it and
+     its Longhorn volume by hand once this is confirmed healthy.
+*/}}
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: fuzeinfra-alertmanager
   labels:
     {{- include "fuzeinfra.labels" . | nindent 4 }}
 spec:
-  serviceName: fuzeinfra-alertmanager
   replicas: 1
+  # Recreate: never two Alertmanagers sending the same notification, and the
+  # optional PVC is ReadWriteOnce.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "fuzeinfra.selectorLabels" (dict "component" "alertmanager" "root" $) | nindent 6 }}
@@ -473,6 +514,13 @@ spec:
         - name: config
           configMap:
             name: fuzeinfra-alertmanager-config
+        - name: data
+          {{- if .Values.alertmanager.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: fuzeinfra-alertmanager-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
         {{- if .Values.alertmanager.githubBridge.enabled }}
         # Mounted as a FILE (not env) because Alertmanager does not substitute env
         # vars in its config; the webhook receiver references it via
@@ -484,17 +532,6 @@ spec:
               - key: {{ .Values.alertmanager.githubBridge.tokenSecretKey | default "CRIT_BRIDGE_TOKEN" }}
                 path: crit_bridge_token
         {{- end }}
-  volumeClaimTemplates:
-    - apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        {{- include "fuzeinfra.storageClass" . | nindent 8 }}
-        resources:
-          requests:
-            storage: {{ .Values.alertmanager.storage }}
 {{- end }}
 
 {{- /* ===================== Grafana ===================== */ -}}
