@@ -109,8 +109,8 @@ jobs:
           set -euo pipefail
           curl -fsSL https://sealed-secrets.prod.fuzefront.com/v1/cert.pem -o /tmp/sealed-secrets-cert.pem
           kubectl create secret docker-registry "$SECRET_NAME" --namespace "$NAMESPACE" --docker-server=ghcr.io \
-            --docker-username="$(jq -r '.auths[\"ghcr.io\"].username' "$DOCKER_CONFIG_JSON")" \
-            --docker-password="$(jq -r '.auths[\"ghcr.io\"].password' "$DOCKER_CONFIG_JSON")" --dry-run=client -o json \
+            --docker-username="$(jq -r '.auths["ghcr.io"].username' "$DOCKER_CONFIG_JSON")" \
+            --docker-password="$(jq -r '.auths["ghcr.io"].password' "$DOCKER_CONFIG_JSON")" --dry-run=client -o json \
             | /tmp/kubeseal --format yaml --cert /tmp/sealed-secrets-cert.pem --namespace "$NAMESPACE" --name "$SECRET_NAME" > "$OUTPUT"
           test -s "$OUTPUT" && grep -q 'kind: SealedSecret' "$OUTPUT"
 

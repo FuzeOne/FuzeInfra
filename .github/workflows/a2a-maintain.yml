@@ -132,7 +132,7 @@ jobs:
             echo "::notice title=a2a-maintain::skipped because PR #${PR_NUMBER} is no longer open (state=${STATE})"
           fi
 
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         if: steps.pr.outputs.open == 'true'
 
       # A closed PR leaves `declared` unset, so the maintainer job below is skipped too.
@@ -246,7 +246,7 @@ jobs:
         # compromises). This workflow holds `contents: write` on the PR branch, so a
         # repointed checkout would run attacker code with push access. Semgrep's
         # github-actions-mutable-action-tag rule flags the unpinned form.
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -434,7 +434,7 @@ jobs:
       # degrade: there is no log to attach.
       - name: Upload agent execution log
         if: always() && steps.maintainer.outcome == 'failure' && steps.maintainer.outputs.execution-file != ''
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: a2a-maintain-execution-log
           path: ${{ steps.maintainer.outputs.execution-file }}
