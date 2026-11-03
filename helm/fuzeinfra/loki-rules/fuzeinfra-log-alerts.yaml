@@ -272,13 +272,15 @@ groups:
       # Seen on prod 2026-11-03: a FuzeAgent rule with a LogQL `|` in a PromQL
       # expression ("PostgresVolumeCorrupted ... unexpected character: '|'").
       # Prometheus cannot report this about itself, and a crash-looping one still
-      # logs, so PrometheusSilent does not catch it either.
+      # logs, so PrometheusSilent does not catch it either. No container matcher:
+      # the line comes from the rule-validator container (a discovered file it
+      # refused to promote) or from prometheus itself (its own config).
       # -----------------------------------------------------------------------
       - alert: PrometheusRulesRejected
         expr: |
           sum(
             count_over_time(
-              {namespace="fuzeinfra", app="prometheus", container="prometheus"}
+              {namespace="fuzeinfra", app="prometheus"}
                 |~ `msg="Error (loading|reloading) (config|rule)`
               [15m]
             )

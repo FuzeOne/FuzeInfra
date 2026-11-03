@@ -785,6 +785,11 @@ alertmanager:
   enabled: true
   image: prom/alertmanager:latest
   port: 9093
+  # Off: data (silences + notification log) lives in an emptyDir. On: a standalone
+  # PVC `fuzeinfra-alertmanager-data` of `storage`. See templates/monitoring.yaml
+  # for why this is no longer a StatefulSet volumeClaimTemplate.
+  persistence:
+    enabled: false
   storage: 1Gi
   # GitHub @fuze bridge (ADDITIVE, off by default). When enabled, a read-only
   # secret file is mounted at /etc/alertmanager/secrets/crit_bridge_token so a

@@ -95,7 +95,8 @@ jobs:
           tests/test_networkpolicy_edge.py \
           tests/test_prometheus_backup_retry.py \
           tests/test_loki_log_alerts.py \
-          tests/test_prometheus_rule_quarantine.py
+          tests/test_prometheus_rule_quarantine.py \
+          tests/test_alertmanager_storage.py
 
     - name: Install Docker Compose
       run: |
