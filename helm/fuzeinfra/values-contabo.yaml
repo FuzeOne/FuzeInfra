@@ -719,6 +719,16 @@ handoffMcp:
   # rebuild, so the fix in (a) would never reach the pod. Drop this once the tag is
   # pinned to an immutable sha-<commit> tag.
   imagePullPolicy: Always
+
+# The infra-platform product tenant + the four Exec-* tenants
+# (.fuze/manifest.json a2a.enabled flips to true in the SAME change). Everything
+# but `enabled` deep-merges from values.yaml's full declaration — see that file
+# for the image/tenants/auth block and the Authentik-provisioning follow-up this
+# does NOT include. `deploy/sealed-secrets/handoff-mcp-secret.yaml` (the reused
+# ANTHROPIC_API_KEY) is already live in this namespace; no new secret is sealed
+# for this change.
+a2a:
+  enabled: true
 # -----------------------------------------------------------------------------
 # Custom Hostname API (prod) — runtime provisioning of customer-owned domains
 # for FuzeFront's multi-tenant portals (EPIC-16). Cloudflare for SaaS issues and

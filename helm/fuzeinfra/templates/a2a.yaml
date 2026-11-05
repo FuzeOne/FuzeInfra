@@ -1,0 +1,249 @@
+{{- if .Values.a2a.enabled }}
+{{- $root := . -}}
+{{- /*
+  FuzeInfra's A2A surface — the `infra-platform` PRODUCT tenant plus the four
+  `Exec-*` tenants this repo also hosts (.fuze/manifest.json `a2a.servingRoles`).
+
+  TOPOLOGY. Per FuzeAgent's frozen values-interface contract
+  (agent-templates/contracts/a2a/v1/schema/values-interface.schema.json), there are
+  exactly two shapes for the SAME image/values document: the family-wide SHARED
+  server (`a2a-shared.fuzeagent`, many unrelated repos as tenants) and a
+  PER-PRODUCT pod (one repo, exactly one tenant, `a2a.inClusterUrl` set to its own
+  Service). FuzeInfra is neither: it is ONE repo serving MULTIPLE tenants that all
+  belong to itself (4 exec roles + 1 product role), which is the "shared server"
+  shape scoped to this repo's own roles rather than the family's. Nothing in the
+  contract restricts the shared-server shape to FuzeAgent's own instance — the
+  "exactly one tenant" ceiling is stated for the PER-PRODUCT shape only
+  (values-interface.schema.json `tenants` description). Every tenant below is
+  served by this ONE pod, so `a2a.inClusterUrl` is set ONCE, to this pod's own
+  Service — the render guard below enforces that it actually matches.
+
+  Card generation reads ONLY `.fuze/manifest.json` + `agent-templates/roles/*` from
+  the checkout at `/repos/<tenant>` (card_generator.py, loader.py) — it does not
+  read `a2a.tenants` at all. That list exists purely for THIS runtime: which
+  repo/ref to clone per tenant name and the per-tenant provider/session binding
+  (a2a/config.py TenantConfig, a2a/runtime.py LocalRepoResolver). Since every
+  tenant here is the SAME repo (FuzeInfra itself), the init container below clones
+  it ONCE and copies it into each tenant's directory rather than five separate
+  network clones.
+
+  AUTH IS MANDATORY AT BOOT, not just a gate-a2a nicety: a2a/runtime.py's
+  build_from_env() raises RuntimeError if `a2a.auth.oidcIssuerUrl` is absent — the
+  pod will not start without it. `providesTo` in .fuze/manifest.json is `[]`
+  (deny-all) independent of this, so no caller is authorized yet regardless of
+  whether the Authentik application below has been created — see the values.yaml
+  comment next to `a2a.auth` for that follow-up.
+
+  cardSigning is deliberately OMITTED (optional per the frozen schema): no repo in
+  the family has wired a real JWS signing key for this surface yet, and
+  card_generator.sign_card() falls back to a deterministic placeholder signature
+  when none is configured, which still satisfies the Fuze profile's non-empty
+  `signatures[]` requirement. Not a regression introduced here.
+*/ -}}
+{{- $port := int (default 8080 (.Values.a2a.service).port) }}
+{{- $svcName := "a2a-fuzeinfra" }}
+{{- $wantUrl := printf "http://%s.%s.svc.cluster.local:%d/rpc" $svcName .Release.Namespace $port }}
+{{- $tag := default "" .Values.a2a.image.tag }}
+{{- if or (eq $tag "") (eq $tag "latest") }}
+{{- fail (printf "a2a.image.tag is %q: pin an IMMUTABLE published tag of ghcr.io/izzywdev/fuze-a2a (FuzeAgent's release build, e.g. the SHA-12 that is also tagged `latest` at build time). `latest` and empty are refused — a moving tag makes the deployed server unidentifiable, and a tag that was never published leaves the pod in ImagePullBackOff while the release stays green." $tag) }}
+{{- end }}
+{{- if ne (default "" .Values.a2a.inClusterUrl) $wantUrl }}
+{{- fail (printf "a2a.inClusterUrl is %q but this chart's A2A Service resolves to %q. The card generator publishes inClusterUrl verbatim as AgentInterface.url on every non-external card THIS pod serves (card-projection.md §2) — a mismatch means every caller that follows any of the five cards is routed somewhere else, and it looks completely healthy from every other angle." (default "<unset>" .Values.a2a.inClusterUrl) $wantUrl) }}
+{{- end }}
+{{- if not (dig "auth" "oidcIssuerUrl" "" .Values.a2a) }}
+{{- fail "a2a.auth.oidcIssuerUrl is required — agent-templates/a2a/runtime.py::build_from_env() raises at boot without it. Every request would otherwise have nothing to fail closed against." }}
+{{- end }}
+{{- $enabledTenants := list }}
+{{- range .Values.a2a.tenants }}
+{{- if .enabled }}
+{{- $enabledTenants = append $enabledTenants .tenant }}
+{{- end }}
+{{- end }}
+{{- if not $enabledTenants }}
+{{- fail "a2a.enabled is true but no a2a.tenants[] entry is enabled — the pod would boot and serve nothing." }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: a2a-fuzeinfra-values
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+data:
+  # Exactly the `a2a` block of the frozen values-interface, which is what
+  # a2a.config.load_config() reads via A2A_VALUES_FILE. Only secret REFERENCES
+  # (name/key) may appear anywhere under this key, never secret values — this repo
+  # has none today because the only credential the runtime needs (the provider API
+  # key) is a top-level env var, wired below, not part of the frozen a2a: document.
+  values.json: |
+    {{ dict "a2a" .Values.a2a | toJson }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: a2a-fuzeinfra
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.a2aDeploy.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "fuzeinfra.selectorLabels" (dict "component" "a2a-fuzeinfra" "root" $) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "fuzeinfra.selectorLabels" (dict "component" "a2a-fuzeinfra" "root" $) | nindent 8 }}
+      annotations:
+        # The tenant/auth document is this pod's entire identity; a ConfigMap edit
+        # alone does not restart the Deployment (selfHeal syncs the ConfigMap but
+        # not the pod). Hash the CONTENT, not the rendered manifest file — the
+        # ConfigMap lives in this same file, so hashing the file would recurse.
+        checksum/values: {{ dict "a2a" .Values.a2a | toJson | sha256sum }}
+    spec:
+      {{- with .Values.a2aDeploy.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Matches the shared image's non-root `USER 10001` (a2a/Dockerfile).
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+      initContainers:
+        # a2a.runtime's LocalRepoResolver reads each tenant's projection inputs
+        # (.fuze/manifest.json + agent-templates/roles/) from
+        # A2A_REPOS_DIR/<tenant>, keyed on the TENANT NAME, not the repo slug —
+        # every tenant below is `izzywdev/FuzeInfra`, so clone it ONCE and copy it
+        # into each tenant directory instead of five redundant network clones.
+        # Public repo: no token needed. GitOps: the git ref is the source of
+        # truth, never live-mutated here.
+        - name: repo-sync
+          image: {{ .Values.a2aDeploy.gitImage }}
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              ref="{{ (first .Values.a2a.tenants).ref | default "main" }}"
+              echo "cloning izzywdev/FuzeInfra@${ref} -> /repos/_src"
+              rm -rf /repos/_src
+              git clone --depth 1 --branch "${ref}" \
+                "https://github.com/izzywdev/FuzeInfra.git" /repos/_src
+              {{- range .Values.a2a.tenants }}
+              {{- if .enabled }}
+              echo "seeding /repos/{{ .tenant }} from /repos/_src"
+              rm -rf "/repos/{{ .tenant }}"
+              cp -a /repos/_src "/repos/{{ .tenant }}"
+              {{- end }}
+              {{- end }}
+          volumeMounts:
+            - name: repos
+              mountPath: /repos
+      containers:
+        - name: a2a
+          image: "{{ .Values.a2a.image.repository }}:{{ .Values.a2a.image.tag }}"
+          imagePullPolicy: {{ .Values.a2a.image.pullPolicy | default .Values.global.imagePullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: {{ $port }}
+          env:
+            # The image's own ENV defaults already match these (a2a/Dockerfile);
+            # declared explicitly so the chart stays correct even if that default
+            # ever changes, and so HOST is never silently the image's loopback
+            # default (CWE-605) — the in-cluster Service could not reach the pod.
+            - name: HOST
+              value: "0.0.0.0"
+            - name: A2A_VALUES_FILE
+              value: /config/values.json
+            - name: A2A_REPOS_DIR
+              value: /repos
+            - name: AGENT_PROVIDER
+              value: {{ .Values.a2aDeploy.agentProvider | default "anthropic" | quote }}
+            - name: FUZE_STATE_DIR
+              value: /state
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            # Reuses the SAME Anthropic account credential already sealed for the
+            # handoff-mcp server in this namespace (deploy/sealed-secrets/
+            # handoff-mcp-secret.yaml) rather than sealing a second copy of the
+            # same key under a new name — the frozen values-interface's per-tenant
+            # `provider.apiKeySecretRef` is schema-legal but UNUSED by
+            # a2a/config.py today (it parses name/environmentId/vaultIds/
+            # memoryResources only); the real credential is this top-level env,
+            # exactly like the shared image's own AGENT_PROVIDER contract expects.
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.a2aDeploy.providerApiKeySecretRef.name }}
+                  key: {{ .Values.a2aDeploy.providerApiKeySecretRef.key }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30 # repo clone x5 + agent boot can be slow
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 6
+          volumeMounts:
+            - name: values
+              mountPath: /config
+              readOnly: true
+            - name: repos
+              mountPath: /repos
+            - name: state
+              mountPath: /state
+          resources:
+            {{- toYaml (.Values.a2aDeploy.resources | default dict) | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: values
+          configMap:
+            name: a2a-fuzeinfra-values
+        - name: repos
+          emptyDir: {}
+        # FUZE_STATE_DIR must be writable — the server persists in-flight session
+        # state there. Ephemeral is correct for v1: in-flight tasks do not survive
+        # a restart, and pretending otherwise would need a real task engine
+        # (a2a/README.md: "this package ... holds no task engine").
+        - name: state
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  # Deliberately a FIXED name, not release-prefixed: `a2a.inClusterUrl` above is a
+  # plain string and must equal this Service's DNS name exactly (see the render
+  # guard), so deriving the name from .Release.Name would let a rename silently
+  # republish an address this pod does not own.
+  name: a2a-fuzeinfra
+  labels:
+    {{- include "fuzeinfra.labels" . | nindent 4 }}
+spec:
+  # ClusterIP only — the values-interface schema requires it (`service.type` is a
+  # `const`). Every tenant here is non-external (card-projection.md §5.4: exec
+  # agents are in-cluster only, never tunnel-published; the product tenant follows
+  # the same rule in this repo, see .fuze/manifest.json `a2a.external: false`).
+  type: ClusterIP
+  selector:
+    {{- include "fuzeinfra.selectorLabels" (dict "component" "a2a-fuzeinfra" "root" $) | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ $port }}
+      targetPort: http
+{{- end }}

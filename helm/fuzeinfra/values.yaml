@@ -1756,6 +1756,111 @@ a2aGateway:
   secretRotation: "0"
   resources: {}
 
+# -----------------------------------------------------------------------------
+# A2A (agent-to-agent) — FuzeInfra's own tenants on the shared A2A runtime image
+# (ghcr.io/izzywdev/fuze-a2a, FuzeAgent agent-templates/a2a). Serves FIVE tenants
+# from ONE pod: the four Exec-* roles this repo hosts (.fuze/manifest.json
+# `a2a.servingRoles`) plus the `infra-platform` product tenant
+# (.claude/skills/fuzeinfra-platform-expert). See templates/a2a.yaml for why this
+# is neither the family-wide shared server nor a per-product single-tenant pod,
+# but a third, equally-valid shape the frozen contract allows: one repo serving
+# only its OWN multiple tenants.
+#
+# DISABLED HERE BY DEFAULT (dev shape) while carrying the FULL declaration —
+# gate-a2a's own discriminator for "this is the real chart block, not an
+# environment overlay" is that it declares `image` + `tenants`, NOT `enabled`.
+# values-contabo.yaml flips only `enabled: true`; everything else deep-merges
+# from here unchanged.
+#
+# FOLLOW-UP NOT DONE IN THIS CHANGE (flagged, not silently assumed): the
+# Authentik OIDC application at the `fuze-a2a` slug below does not exist yet.
+# grafana/kafka-ui/airflow's OIDC providers were each created by hand in the
+# Authentik admin UI and only enabled here once verified live against the real
+# discovery document (see values-contabo.yaml comments next to `kafkaUi.oidc`)
+# — this is the same follow-up, and it is safe to defer: .fuze/manifest.json
+# `providesTo` is `[]` (deny-all) independent of whether this issuer resolves,
+# so no caller is authorized either way yet. Until the Authentik app exists,
+# every A2A request 401s — a fail-closed pod, not a silently-open one.
+a2a:
+  enabled: false
+  image:
+    repository: ghcr.io/izzywdev/fuze-a2a
+    # Immutable tag (matches published `latest` as of 2026-09-06). Pin bumps go
+    # through a PR like any other image tag — never point this at `latest`.
+    tag: d9edae9b4268
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  protocolVersion: "1.0"
+  # MUST equal templates/a2a.yaml's own Service DNS — the render guard there
+  # fails the chart otherwise. Every card this pod serves (all 5 tenants)
+  # advertises this URL as AgentInterface.url.
+  inClusterUrl: http://a2a-fuzeinfra.fuzeinfra.svc.cluster.local:8080/rpc
+  auth:
+    # See the FOLLOW-UP note above — application not yet created in Authentik.
+    oidcIssuerUrl: https://authentik.prod.fuzefront.com/application/o/fuze-a2a/
+    callerClaim: sub
+  tenants:
+    # Exec tenants — card-projection.md §5: one card per exec role, tenant
+    # `Exec-<role>`, always non-external. Source repo is this one; the role.json
+    # files already exist at agent-templates/roles/{ceo,cto,cfo,ciso}.
+    - tenant: Exec-ceo
+      repo: izzywdev/FuzeInfra
+      ref: main
+      enabled: true
+      external: false
+    - tenant: Exec-cto
+      repo: izzywdev/FuzeInfra
+      ref: main
+      enabled: true
+      external: false
+    - tenant: Exec-cfo
+      repo: izzywdev/FuzeInfra
+      ref: main
+      enabled: true
+      external: false
+    - tenant: Exec-ciso
+      repo: izzywdev/FuzeInfra
+      ref: main
+      enabled: true
+      external: false
+    # The product tenant. card-projection.md §2: "tenant = <RepoName> — the repo
+    # name segment" for a product/infra card (never the role key) — this is what
+    # card_generator.generate_cards() derives by default, and the adapter passes
+    # `tenant.tenant` straight through to project_product_card(tenant=...), so
+    # this string IS what callers must echo. servingRoles is left unset here: it
+    # inherits .fuze/manifest.json's `a2a.servingRoles`, which
+    # select_serving_roles() already narrows to just `infra-platform` (exec roles
+    # are excluded from the product card unconditionally).
+    - tenant: FuzeInfra
+      repo: izzywdev/FuzeInfra
+      ref: main
+      enabled: true
+      external: false
+
+# devops-only deployment mechanics for templates/a2a.yaml. Deliberately a
+# SIBLING of `a2a`, not nested inside it: the values-interface contract is
+# additionalProperties:false at every level, so chart-internal knobs (replicas,
+# the git-clone image, resource limits, which Secret holds the provider API key)
+# must live outside the frozen `a2a:` document or a schema-conformance check on
+# that block would fail on fields the contract never defined.
+a2aDeploy:
+  replicas: 1
+  # Same git.mjs style default other charts use for clone-only init containers.
+  gitImage: alpine/git:2.45.2
+  agentProvider: anthropic
+  imagePullSecrets: []
+  # Reuses the account credential already sealed for handoff-mcp in this
+  # namespace — see templates/a2a.yaml's container env comment for why this is
+  # not a new secret.
+  providerApiKeySecretRef:
+    name: handoff-mcp-secret
+    key: ANTHROPIC_API_KEY
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
 handoffMcp:
   enabled: false
   image: ghcr.io/izzywdev/fuzeinfra/agent-handoff
