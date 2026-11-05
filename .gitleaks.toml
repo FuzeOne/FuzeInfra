@@ -54,4 +54,12 @@ useDefault = true
     # Verified: this is a code example in documentation (line ~574) showing how to
     # POST to the custom-hostname stub in a local cluster. Same local-dev-token as above.
     '''docs/consuming-repos/CUSTOM_DOMAINS\.md''',
+
+    # deploy/longhorn-system/longhorn-s3-credentials.yaml — triggers `generic-api-key`
+    # and `aws-access-token` on the SealedSecret encryptedData fields (AWS_ACCESS_KEY_ID /
+    # AWS_SECRET_ACCESS_KEY). Verified: this is kubeseal output (encrypted ciphertext);
+    # the `AgB...` values are the bitnami/sealed-secrets encrypted blobs, not plaintext
+    # credentials. The file lives outside deploy/sealed-secrets/ because longhorn-system
+    # is not an allowed destination of the fuzeinfra AppProject (see deploy/longhorn-system/README.md).
+    '''deploy/longhorn-system/longhorn-s3-credentials\.yaml''',
   ]
