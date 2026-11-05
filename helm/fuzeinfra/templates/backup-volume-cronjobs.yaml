@@ -145,9 +145,24 @@ spec:
                   # fuzeinfra-prometheus port 9090 after 3 ms`, three pods per night,
                   # no Prometheus backup for days. Same race #1283 fixed for the egress
                   # probe. A genuine block still fails here, loudly, after the window.
+                  #
+                  # Retry ONLY a refused connection (curl exit 7). Once connected,
+                  # never retry: Prometheus completes the snapshot even after curl
+                  # gives up, so each retry cut ANOTHER full head copy into
+                  # <tsdb>/snapshots — space retention.size does not count. With a
+                  # 30s ceiling that was 18 copies per pod, 3 pods a night, until the
+                  # volume hit "no space left on device" (2026-11-05).
                   GRACE={{ $v.prometheus.connectGraceSeconds | default 90 }}
+                  SNAP_TIMEOUT={{ $v.prometheus.snapshotTimeoutSeconds | default 900 }}
                   waited=0
-                  until resp="$(curl -sS --max-time 30 -XPOST "$PROM_URL/api/v1/admin/tsdb/snapshot")"; do
+                  while :; do
+                    rc=0
+                    resp="$(curl -sS --connect-timeout 5 --max-time "$SNAP_TIMEOUT" -XPOST "$PROM_URL/api/v1/admin/tsdb/snapshot")" || rc=$?
+                    [ "$rc" -eq 0 ] && break
+                    if [ "$rc" -ne 7 ]; then
+                      echo "snapshot request failed after connecting (curl exit $rc) — not retrying, a retry would cut another head snapshot; check the Prometheus pod and its volume's free space" >&2
+                      exit 1
+                    fi
                     [ "$waited" -ge "$GRACE" ] && { echo "Prometheus unreachable after ${GRACE}s — not a startup race; check networkpolicy-admin.yaml and the Prometheus pod" >&2; exit 1; }
                     echo "t=${waited}s Prometheus not reachable yet; retrying"
                     sleep 5; waited=$((waited + 5))
@@ -198,6 +213,10 @@ spec:
                   printf 'snapshot=%s\ncompleted=%s\nsource_pvc=%s\nlayout=tsdb/\n' \
                     "$name" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "{{ $.Values.prometheus.pvcName }}" > /tmp/MANIFEST
                   aws --endpoint-url "$S3_ENDPOINT" s3 cp /tmp/MANIFEST "s3://$S3_BUCKET/$key/MANIFEST"
+                  # Release the snapshot now rather than at the next night's run: its
+                  # hard links pin blocks retention has dropped, and its flushed head
+                  # block is real bytes on the TSDB volume.
+                  rm -rf "/snapshots/$name"
                   # Release the hard links so retention can actually free blocks.
                   rm -rf "/snapshots/$name"
                   echo "Prometheus TSDB backup complete: s3://$S3_BUCKET/$key/"

@@ -58,3 +58,12 @@ def test_backup_cronjob_follows_the_active_claim():
     vols = job["spec"]["jobTemplate"]["spec"]["template"]["spec"]["volumes"]
     claims = {v["persistentVolumeClaim"]["claimName"] for v in vols if "persistentVolumeClaim" in v}
     assert claims == {"fuzeinfra-prometheus-data-v2"}
+
+
+def test_retired_claims_do_not_follow_the_active_size():
+    """2026-11-05: raising prometheus.storage to 40Gi must not expand the retired claim."""
+    docs = _render("values-contabo.yaml")
+    active = _by(docs, "PersistentVolumeClaim", "fuzeinfra-prometheus-data-v2")
+    retired = _by(docs, "PersistentVolumeClaim", "fuzeinfra-prometheus-data")
+    assert active["spec"]["resources"]["requests"]["storage"] == "40Gi"
+    assert retired["spec"]["resources"]["requests"]["storage"] == "20Gi"
