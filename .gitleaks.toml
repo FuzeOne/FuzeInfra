@@ -54,4 +54,13 @@ useDefault = true
     # Verified: this is a code example in documentation (line ~574) showing how to
     # POST to the custom-hostname stub in a local cluster. Same local-dev-token as above.
     '''docs/consuming-repos/CUSTOM_DOMAINS\.md''',
+
+    # .github/workflows/node-disk-resize.yml — triggers `curl-auth-header` on the
+    # `req()` helper function definition (line 124):
+    #   req() { curl -sS -H "Authorization: Bearer $TOK" \
+    # Verified: $TOK is a Contabo OAuth2 bearer token obtained at runtime and
+    # immediately masked with `echo "::add-mask::$TOK"` (line 123) before the `req()`
+    # function is defined. No hardcoded token is present; the variable never appears as
+    # a literal value in any commit.
+    '''.github/workflows/node-disk-resize\.yml''',
   ]
