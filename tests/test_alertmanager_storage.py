@@ -73,29 +73,19 @@ def test_service_still_routes_to_the_pod():
 LEGACY = "data-fuzeinfra-alertmanager-0"
 
 
-def test_legacy_pvc_is_adopted_with_its_exact_live_spec_on_prod_only():
-    """Phase 1 of removing the orphaned PVC: Argo adopts it so a later commit can prune it.
+def test_legacy_pvc_is_pruned_everywhere():
+    """Phase 2 of removing the orphaned PVC (#1545 adopted it; Argo now tracks it).
 
-    Server-side apply onto a BOUND claim must not try to change anything, so the render is
-    pinned to the live object (cluster-query, 2026-11-05).
+    The claim must leave the render on every overlay so fuzeinfra-prod's prune: true
+    deletes it, and the longhorn StorageClass (reclaimPolicy Delete) takes the dead
+    Longhorn volume with it. Re-rendering it would re-create a claim on a dead volume.
     """
-    pvc = next(d for d in _render() if d["kind"] == "PersistentVolumeClaim"
-               and d["metadata"]["name"] == LEGACY)
-    assert pvc["spec"] == {
-        "accessModes": ["ReadWriteOnce"],
-        "storageClassName": "longhorn",
-        "volumeMode": "Filesystem",
-        "volumeName": "pvc-d16da7af-db38-47a3-8207-4122ac14a544",
-        "resources": {"requests": {"storage": "1Gi"}},
-    }
-    # Must stay prunable: the whole point is that phase 2 deletes it.
-    assert "Prune=false" not in str(pvc["metadata"].get("annotations", {}))
-    assert "helm.sh/resource-policy" not in (pvc["metadata"].get("annotations") or {})
-
-
-def test_legacy_pvc_never_renders_off_prod():
-    out = subprocess.run(
-        ["helm", "template", "fuzeinfra", str(CHART), "--namespace", "fuzeinfra"],
-        capture_output=True, text=True, check=True).stdout
-    docs = [d for d in yaml.safe_load_all(out) if d]
-    assert not [d for d in docs if d["metadata"].get("name") == LEGACY]
+    for overlay in ([], ["-f", str(CHART / "values-contabo.yaml")],
+                    ["-f", str(CHART / "values-local.yaml")],
+                    ["-f", str(CHART / "values-aws.yaml")]):
+        out = subprocess.run(
+            ["helm", "template", "fuzeinfra", str(CHART), "--namespace", "fuzeinfra", *overlay],
+            capture_output=True, text=True, check=True).stdout
+        docs = [d for d in yaml.safe_load_all(out) if d]
+        assert not [d for d in docs if d["metadata"].get("name") == LEGACY], overlay
+    assert not (CHART / "templates" / "alertmanager-legacy-pvc.yaml").exists()
