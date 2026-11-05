@@ -54,4 +54,10 @@ useDefault = true
     # Verified: this is a code example in documentation (line ~574) showing how to
     # POST to the custom-hostname stub in a local cluster. Same local-dev-token as above.
     '''docs/consuming-repos/CUSTOM_DOMAINS\.md''',
+
+    # deploy/longhorn-system/longhorn-s3-credentials.yaml — triggers on encrypted field values.
+    # Verified: this is a SealedSecret (kubeseal output). The field values are asymmetrically
+    # encrypted ciphertext — AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_ENDPOINTS, and
+    # VIRTUAL_HOSTED_STYLE are all sealed by kubeseal and carry no plaintext credential bytes.
+    '''deploy/longhorn-system/longhorn-s3-credentials\.yaml''',
   ]
