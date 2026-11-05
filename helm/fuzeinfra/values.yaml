@@ -669,9 +669,16 @@ prometheus:
   pvcName: fuzeinfra-prometheus-data
   # Claims no pod mounts any more but that are kept (declared, Prune=false).
   retiredPvcs: []
+  # Their declared size, deliberately decoupled from `storage` so resizing the
+  # active TSDB never expands a retired claim. Must equal the live size: the API
+  # server rejects a shrink.
+  retiredPvcStorage: 20Gi
+  # size bounds blocks + WAL only — not <tsdb>/snapshots, a snapshot's flushed
+  # head block or compaction scratch — so keep `storage` >= 2x size
+  # (tests/test_prometheus_tsdb_headroom.py). 15GB on 20Gi filled prod on 2026-11-05.
   retention:
     time: "15d"
-    size: "15GB"
+    size: "10GB"
   # Discover alert/recording rules from labeled ConfigMaps in ANY namespace.
   # Opt-in: runs a k8s-sidecar that watches ConfigMaps with the configured label
   # and writes their data into Prometheus' rules dir, then triggers a reload.
@@ -1035,6 +1042,13 @@ backups:
       # behind the admin-plane NetworkPolicy, and a new pod's first connections
       # are refused until the CNI has added its IP to the allowed sources.
       connectGraceSeconds: 90
+      # Ceiling on ONE snapshot request once connected. A snapshot flushes the
+      # in-memory head to disk, which on a busy TSDB takes far longer than the
+      # 30s this used to allow. A request that connected is NEVER retried: the
+      # server finishes the snapshot even after curl gives up, so every retry
+      # cut another full head copy into <tsdb>/snapshots, which retention.size
+      # does not count. That loop filled the 20Gi volume (2026-11-05).
+      snapshotTimeoutSeconds: 900
       host: fuzeinfra-prometheus
       port: 9090
       # The PVC is `prometheus.pvcName` (templates/monitoring.yaml) — one source

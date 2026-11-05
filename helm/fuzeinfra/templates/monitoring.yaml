@@ -177,7 +177,9 @@ spec:
   {{- include "fuzeinfra.storageClass" $ | nindent 2 }}
   resources:
     requests:
-      storage: {{ $.Values.prometheus.storage }}
+      # NOT prometheus.storage: growing the active volume must not also grow a
+      # retired one nobody mounts (and that may hold a damaged filesystem).
+      storage: {{ $.Values.prometheus.retiredPvcStorage | default "20Gi" }}
 {{- end }}
 ---
 apiVersion: apps/v1

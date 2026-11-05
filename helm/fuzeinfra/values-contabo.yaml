@@ -207,7 +207,16 @@ prometheus:
   nodeSelector:
     node.longhorn.io/create-default-disk: "true"
     fuzeinfra.io/role: monitoring
-  storage: 20Gi
+  # 40Gi (was 20Gi). 2026-11-05: the TSDB volume hit "no space left on device";
+  # every scrape, rule append and head compaction failed. retention.size (15GB)
+  # bounds blocks + WAL but NOT <tsdb>/snapshots, and the nightly backup's
+  # retry loop had been cutting full head snapshots into it. Growth is an
+  # ordinary GitOps change (standalone PVC, longhorn allowVolumeExpansion).
+  # tests/test_prometheus_tsdb_headroom.py keeps storage >= 2x retention.size.
+  storage: 40Gi
+  retention:
+    time: "15d"
+    size: "15GB"
   # 2026-10-14: fuzeinfra-prometheus-data (pvc-88752815) has a corrupt ext4 that
   # kubelet's mount-time fsck cannot repair. Fresh claim; the damaged one is kept.
   pvcName: fuzeinfra-prometheus-data-v2
