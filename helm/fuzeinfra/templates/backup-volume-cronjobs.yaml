@@ -213,10 +213,6 @@ spec:
                   printf 'snapshot=%s\ncompleted=%s\nsource_pvc=%s\nlayout=tsdb/\n' \
                     "$name" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "{{ $.Values.prometheus.pvcName }}" > /tmp/MANIFEST
                   aws --endpoint-url "$S3_ENDPOINT" s3 cp /tmp/MANIFEST "s3://$S3_BUCKET/$key/MANIFEST"
-                  # Release the snapshot now rather than at the next night's run: its
-                  # hard links pin blocks retention has dropped, and its flushed head
-                  # block is real bytes on the TSDB volume.
-                  rm -rf "/snapshots/$name"
                   # Release the hard links so retention can actually free blocks.
                   rm -rf "/snapshots/$name"
                   echo "Prometheus TSDB backup complete: s3://$S3_BUCKET/$key/"
