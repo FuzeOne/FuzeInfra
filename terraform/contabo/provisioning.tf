@@ -148,11 +148,17 @@ resource "null_resource" "provision" {
       # Fixes GHCR pulls TCP-reset on Contabo IPv6 CDN paths (FuzeInfra#616).
       # Written before k3s so containerd inherits the preference from first boot.
       "printf 'precedence ::ffff:0:0/96  100\\n' > /etc/gai.conf",
+      # Pin + verify installer before execution (avoid mutable curl|sh).
+      "K3S_INSTALL_SCRIPT_URL='https://raw.githubusercontent.com/k3s-io/k3s/v1.36.2+k3s1/install.sh'",
+      "K3S_INSTALL_SCRIPT_SHA256='46177d4c99440b4c0311b67233823a8e8a2fc09693f6c89af1a7161e152fbfad'",
+      "curl -fsSL \"$K3S_INSTALL_SCRIPT_URL\" -o /tmp/k3s-install.sh",
+      "echo \"$K3S_INSTALL_SCRIPT_SHA256  /tmp/k3s-install.sh\" | sha256sum -c -",
+      "chmod 700 /tmp/k3s-install.sh",
       "if ! command -v k3s &>/dev/null; then",
-      "  curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC='--tls-san ${local.server_ip} --node-taint node-role.kubernetes.io/control-plane=:PreferNoSchedule' sh -",
+      "  INSTALL_K3S_EXEC='--tls-san ${local.server_ip} --node-taint node-role.kubernetes.io/control-plane=:PreferNoSchedule' /tmp/k3s-install.sh",
       "else",
       "  echo 'k3s already installed, running upgrade check'",
-      "  curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC='--tls-san ${local.server_ip} --node-taint node-role.kubernetes.io/control-plane=:PreferNoSchedule' sh - || true",
+      "  INSTALL_K3S_EXEC='--tls-san ${local.server_ip} --node-taint node-role.kubernetes.io/control-plane=:PreferNoSchedule' /tmp/k3s-install.sh || true",
       "fi",
       "sleep 15",
       "kubectl wait --for=condition=ready node --all --timeout=120s",
@@ -224,7 +230,11 @@ resource "null_resource" "provision" {
 
       # --- ArgoCD ---
       "kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -",
-      "kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml",
+      "ARGOCD_MANIFEST_URL='https://raw.githubusercontent.com/argoproj/argo-cd/v2.13.3/manifests/install.yaml'",
+      "ARGOCD_MANIFEST_SHA256='0940f3f92ee6b91141cefc5368b1379aed0aef898186879ea2ca5f2607ee2617'",
+      "curl -fsSL \"$ARGOCD_MANIFEST_URL\" -o /tmp/argocd-install.yaml",
+      "echo \"$ARGOCD_MANIFEST_SHA256  /tmp/argocd-install.yaml\" | sha256sum -c -",
+      "kubectl apply -n argocd -f /tmp/argocd-install.yaml",
       "kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s",
 
       # --- ArgoCD AppProject + Applications ---
@@ -349,4 +359,3 @@ resource "null_resource" "extract_kubeconfig" {
     EOT
   }
 }
-
