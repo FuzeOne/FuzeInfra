@@ -10,9 +10,12 @@ import shutil
 import secrets
 import string
 import base64
+import re
 import subprocess
 import time
 from pathlib import Path
+
+_POSTGRES_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 def generate_secure_password(length=16):
@@ -33,10 +36,24 @@ def generate_fernet_key():
     return base64.urlsafe_b64encode(key).decode('utf-8')
 
 
+def quote_postgres_identifier(value, setting_name):
+    """Return a safely quoted PostgreSQL identifier."""
+    if not _POSTGRES_IDENTIFIER_RE.fullmatch(value):
+        raise ValueError(
+            f"{setting_name} must start with a letter or underscore and contain only letters, numbers, and underscores."
+        )
+    return f'"{value}"'
+
+
+def quote_postgres_literal(value):
+    """Return a safely quoted PostgreSQL string literal."""
+    return "'" + value.replace("'", "''") + "'"
+
+
 def run_docker_command(command, description=""):
     """Run a Docker command and return success status."""
     try:
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
         return True, result.stdout
     except subprocess.CalledProcessError as e:
         return False, e.stderr
@@ -44,7 +61,14 @@ def run_docker_command(command, description=""):
 
 def check_postgres_container():
     """Check if PostgreSQL container is running."""
-    success, output = run_docker_command("docker ps --filter name=fuzeinfra-postgres --format '{{.Names}}'")
+    success, output = run_docker_command([
+        "docker",
+        "ps",
+        "--filter",
+        "name=fuzeinfra-postgres",
+        "--format",
+        "{{.Names}}",
+    ])
     return success and "fuzeinfra-postgres" in output
 
 
@@ -82,6 +106,15 @@ def setup_databases(non_interactive=False):
     postgres_user = env_vars.get('POSTGRES_USER', 'fuzeinfra')
     postgres_password = env_vars.get('POSTGRES_PASSWORD', 'fuzeinfra_secure_password')
     postgres_db = env_vars.get('POSTGRES_DB', 'fuzeinfra_db')
+    try:
+        postgres_user_ident = quote_postgres_identifier(postgres_user, "POSTGRES_USER")
+    except ValueError as exc:
+        if not non_interactive:
+            print(f"❌ {exc}")
+        return False
+
+    postgres_user_literal = quote_postgres_literal(postgres_user)
+    postgres_password_literal = quote_postgres_literal(postgres_password)
     
     databases_to_create = [
         {
@@ -98,8 +131,25 @@ def setup_databases(non_interactive=False):
         print(f"📋 Creating databases for user: {postgres_user}")
     
     # Create user if it doesn't exist
-    create_user_cmd = f'docker exec fuzeinfra-postgres psql -U postgres -c "CREATE USER {postgres_user} WITH PASSWORD \'{postgres_password}\';" 2>/dev/null || true'
-    run_docker_command(create_user_cmd)
+    create_user_sql = (
+        "DO $$ BEGIN "
+        f"IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = {postgres_user_literal}) THEN "
+        f"CREATE USER {postgres_user_ident} WITH PASSWORD {postgres_password_literal}; "
+        "END IF; "
+        "END $$;"
+    )
+    run_docker_command([
+        "docker",
+        "exec",
+        "fuzeinfra-postgres",
+        "psql",
+        "-U",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        create_user_sql,
+    ])
     
     # Create databases
     for db_info in databases_to_create:
@@ -109,10 +159,26 @@ def setup_databases(non_interactive=False):
         if not non_interactive:
             print(f"   📦 Creating database: {db_name}")
             print(f"      Purpose: {purpose}")
+        try:
+            db_name_ident = quote_postgres_identifier(db_name, "database name")
+        except ValueError as exc:
+            if not non_interactive:
+                print(f"      ❌ {exc}")
+            return False
+        db_name_literal = quote_postgres_literal(db_name)
         
         # Check if database exists using PostgreSQL query
-        check_db_cmd = f'docker exec fuzeinfra-postgres psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = \'{db_name}\'"'
-        success, output = run_docker_command(check_db_cmd)
+        success, output = run_docker_command([
+            "docker",
+            "exec",
+            "fuzeinfra-postgres",
+            "psql",
+            "-U",
+            "postgres",
+            "-t",
+            "-c",
+            f"SELECT 1 FROM pg_database WHERE datname = {db_name_literal}",
+        ])
         db_exists = success and output.strip() == '1'
         
         if db_exists:
@@ -120,13 +186,33 @@ def setup_databases(non_interactive=False):
                 print(f"      ✅ Database {db_name} already exists")
         else:
             # Create database
-            create_db_cmd = f'docker exec fuzeinfra-postgres psql -U postgres -c "CREATE DATABASE {db_name} OWNER {postgres_user};"'
-            success, output = run_docker_command(create_db_cmd)
+            success, output = run_docker_command([
+                "docker",
+                "exec",
+                "fuzeinfra-postgres",
+                "psql",
+                "-U",
+                "postgres",
+                "-v",
+                "ON_ERROR_STOP=1",
+                "-c",
+                f"CREATE DATABASE {db_name_ident} OWNER {postgres_user_ident};",
+            ])
             
             if success:
                 # Grant privileges
-                grant_cmd = f'docker exec fuzeinfra-postgres psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE {db_name} TO {postgres_user};"'
-                run_docker_command(grant_cmd)
+                run_docker_command([
+                    "docker",
+                    "exec",
+                    "fuzeinfra-postgres",
+                    "psql",
+                    "-U",
+                    "postgres",
+                    "-v",
+                    "ON_ERROR_STOP=1",
+                    "-c",
+                    f"GRANT ALL PRIVILEGES ON DATABASE {db_name_ident} TO {postgres_user_ident};",
+                ])
                 
                 if not non_interactive:
                     print(f"      ✅ Database {db_name} created successfully")

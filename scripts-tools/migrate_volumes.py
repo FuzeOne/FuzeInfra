@@ -5,15 +5,14 @@ Migrates data from old shared-* volumes to new fuzeinfra_* volumes
 """
 
 import subprocess
-import sys
-import time
+import shlex
 
 def run_command(cmd, description=""):
     """Run a command and return the result"""
     print(f"🔄 {description}")
-    print(f"   Command: {cmd}")
+    print(f"   Command: {shlex.join(cmd)}")
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         if result.stdout:
             print(f"   ✅ {result.stdout.strip()}")
         return True
@@ -24,8 +23,12 @@ def run_command(cmd, description=""):
 def volume_exists(volume_name):
     """Check if a volume exists"""
     try:
-        result = subprocess.run(f"docker volume inspect {volume_name}", 
-                              shell=True, capture_output=True, text=True, check=True)
+        subprocess.run(
+            ["docker", "volume", "inspect", volume_name],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         return True
     except subprocess.CalledProcessError:
         return False
@@ -38,11 +41,24 @@ def migrate_volume_data(source_vol, target_vol):
     
     # Create target volume if it doesn't exist
     if not volume_exists(target_vol):
-        if not run_command(f"docker volume create {target_vol}", f"Creating target volume {target_vol}"):
+        if not run_command(["docker", "volume", "create", target_vol], f"Creating target volume {target_vol}"):
             return False
     
     # Use a temporary container to copy data
-    copy_cmd = f"""docker run --rm -v {source_vol}:/source -v {target_vol}:/target alpine sh -c "cp -a /source/. /target/" """
+    copy_cmd = [
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{source_vol}:/source",
+        "-v",
+        f"{target_vol}:/target",
+        "alpine",
+        "cp",
+        "-a",
+        "/source/.",
+        "/target/",
+    ]
     
     return run_command(copy_cmd, f"Copying data from {source_vol} to {target_vol}")
 

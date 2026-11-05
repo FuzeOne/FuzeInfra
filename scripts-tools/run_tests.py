@@ -11,14 +11,17 @@ import sys
 import time
 import requests
 import os
+import shlex
 from pathlib import Path
 
 
-def run_command(cmd, check=True, shell=True):
+def run_command(cmd, check=True):
     """Run a shell command and return the result."""
-    print(f"Running: {cmd}")
+    if isinstance(cmd, str):
+        cmd = shlex.split(cmd)
+    print(f"Running: {shlex.join(cmd)}")
     try:
-        result = subprocess.run(cmd, shell=shell, check=check, capture_output=True, text=True)
+        result = subprocess.run(cmd, shell=False, check=check, capture_output=True, text=True)
         if result.stdout:
             print(result.stdout)
         return result
@@ -59,34 +62,34 @@ def main():
     
     # Check if Docker is running
     print("📋 Checking Docker...")
-    result = run_command("docker --version", check=False)
+    result = run_command(["docker", "--version"], check=False)
     if result.returncode != 0:
         print("❌ Docker is not available. Please install and start Docker.")
         sys.exit(1)
     
     # Check if docker-compose is available
-    result = run_command("docker-compose --version", check=False)
+    result = run_command(["docker-compose", "--version"], check=False)
     if result.returncode != 0:
         print("❌ docker-compose is not available. Please install docker-compose.")
         sys.exit(1)
     
     # Install test dependencies
     print("📦 Installing test dependencies...")
-    run_command("pip install -r tests/requirements.txt")
+    run_command([sys.executable, "-m", "pip", "install", "-r", "tests/requirements.txt"])
     
     # Create Docker network
     print("🌐 Creating Docker network...")
-    run_command("docker network create FuzeInfra", check=False)
+    run_command(["docker", "network", "create", "FuzeInfra"], check=False)
     
     # Check if .env file exists
     if not os.path.exists(".env"):
         print("⚙️  Creating environment file...")
-        run_command("python scripts-tools/setup_environment.py")
+        run_command([sys.executable, "scripts-tools/setup_environment.py"])
     
     try:
         # Start infrastructure services
         print("🏗️  Starting infrastructure services...")
-        run_command("docker-compose -f docker-compose.FuzeInfra.yml up -d")
+        run_command(["docker-compose", "-f", "docker-compose.FuzeInfra.yml", "up", "-d"])
         
         # Wait for services to start
         print("⏳ Waiting for services to start (60 seconds)...")
@@ -112,7 +115,7 @@ def main():
         
         # Run tests
         print("🧪 Running infrastructure tests...")
-        test_result = run_command("pytest tests/ -v --tb=short --color=yes", check=False)
+        test_result = run_command(["pytest", "tests/", "-v", "--tb=short", "--color=yes"], check=False)
         
         if test_result.returncode == 0:
             print("✅ All tests passed!")
@@ -125,8 +128,8 @@ def main():
     finally:
         # Cleanup
         print("🧹 Cleaning up...")
-        run_command("docker-compose -f docker-compose.FuzeInfra.yml down -v", check=False)
-        run_command("docker network rm FuzeInfra", check=False)
+        run_command(["docker-compose", "-f", "docker-compose.FuzeInfra.yml", "down", "-v"], check=False)
+        run_command(["docker", "network", "rm", "FuzeInfra"], check=False)
         
         # Show final status
         if 'test_result' in locals() and test_result.returncode == 0:
