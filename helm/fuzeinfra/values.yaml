@@ -791,6 +791,11 @@ alertmanager:
   persistence:
     enabled: false
   storage: 1Gi
+  # TEMPORARY adopt-then-prune of the orphaned data-fuzeinfra-alertmanager-0 PVC.
+  # See templates/alertmanager-legacy-pvc.yaml. Off everywhere except values-contabo.yaml.
+  legacyPvc:
+    adopt: false
+    volumeName: ""
   # GitHub @fuze bridge (ADDITIVE, off by default). When enabled, a read-only
   # secret file is mounted at /etc/alertmanager/secrets/crit_bridge_token so a
   # `webhook_configs` receiver can authenticate to the CF Worker bridge

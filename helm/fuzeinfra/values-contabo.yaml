@@ -1452,6 +1452,11 @@ nodeConfigurator:
 
 # Stateful services not otherwise overridden here still need the durable pin.
 alertmanager:
+  # Phase 1 of the GitOps removal of the orphaned PVC (templates/alertmanager-legacy-pvc.yaml):
+  # Argo adopts it. Phase 2 sets adopt: false so Argo prunes it.
+  legacyPvc:
+    adopt: true
+    volumeName: pvc-d16da7af-db38-47a3-8207-4122ac14a544
   # Pin to durable Longhorn-disk nodes. longhorn-manager only runs on the 3
   # durable nodes, so Longhorn registers node.longhorn.io objects only there;
   # a stateful pod scheduled onto an ephemeral elastic node can NEVER attach

@@ -68,3 +68,34 @@ def test_service_still_routes_to_the_pod():
     assert all(labels.get(k) == v for k, v in svc["spec"]["selector"].items())
     # The admin-plane NetworkPolicy opt-in must survive the kind change.
     assert labels.get("fuzeinfra.io/ingress-profile") == "admin"
+
+
+LEGACY = "data-fuzeinfra-alertmanager-0"
+
+
+def test_legacy_pvc_is_adopted_with_its_exact_live_spec_on_prod_only():
+    """Phase 1 of removing the orphaned PVC: Argo adopts it so a later commit can prune it.
+
+    Server-side apply onto a BOUND claim must not try to change anything, so the render is
+    pinned to the live object (cluster-query, 2026-11-05).
+    """
+    pvc = next(d for d in _render() if d["kind"] == "PersistentVolumeClaim"
+               and d["metadata"]["name"] == LEGACY)
+    assert pvc["spec"] == {
+        "accessModes": ["ReadWriteOnce"],
+        "storageClassName": "longhorn",
+        "volumeMode": "Filesystem",
+        "volumeName": "pvc-d16da7af-db38-47a3-8207-4122ac14a544",
+        "resources": {"requests": {"storage": "1Gi"}},
+    }
+    # Must stay prunable: the whole point is that phase 2 deletes it.
+    assert "Prune=false" not in str(pvc["metadata"].get("annotations", {}))
+    assert "helm.sh/resource-policy" not in (pvc["metadata"].get("annotations") or {})
+
+
+def test_legacy_pvc_never_renders_off_prod():
+    out = subprocess.run(
+        ["helm", "template", "fuzeinfra", str(CHART), "--namespace", "fuzeinfra"],
+        capture_output=True, text=True, check=True).stdout
+    docs = [d for d in yaml.safe_load_all(out) if d]
+    assert not [d for d in docs if d["metadata"].get("name") == LEGACY]
