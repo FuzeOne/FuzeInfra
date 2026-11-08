@@ -16,3 +16,10 @@ services:
   # aborting the entire docker-compose up.  Skip it in CI.
   minio:
     profiles: ["object-storage"]
+
+  # dnsmasq tries to bind 0.0.0.0:53/udp on the host; GitHub Actions runners
+  # already have systemd-resolved (or similar) listening on that port, causing
+  # docker-compose up to fail with "address already in use".  CI tests connect
+  # to services directly by localhost port and need no custom DNS resolution.
+  dnsmasq:
+    profiles: ["local-dns"]
