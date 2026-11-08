@@ -28,7 +28,7 @@ metadata:
 spec:
   project: fuzeinfra
   source:
-    repoURL: https://github.com/izzywdev/FuzeInfra.git
+    repoURL: https://github.com/FuzeOne/FuzeInfra.git
     targetRevision: main
     path: runners/arc/gitops
     directory:
@@ -45,7 +45,7 @@ spec:
     # to this repo rather than falling back — see docs/crit-log-autofix.md.
     managedNamespaceMetadata:
       annotations:
-        fuzeinfra.io/owner-repo: izzywdev/FuzeInfra
+        fuzeinfra.io/owner-repo: FuzeOne/FuzeInfra
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

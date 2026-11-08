@@ -24,7 +24,7 @@ provider "cloudflare" {
 }
 
 module "dns" {
-  source          = "git::https://github.com/izzywdev/FuzeInfra.git//modules/cloudflare-dns?ref=main"
+  source          = "git::https://github.com/FuzeOne/FuzeInfra.git//modules/cloudflare-dns?ref=main"
   domain          = "mendysrobotics.com"
   zone_id         = "3784bf88809ac135888856ab6183db00" # public identifier
   tunnel_hostname = "prod.fuzefront.com"

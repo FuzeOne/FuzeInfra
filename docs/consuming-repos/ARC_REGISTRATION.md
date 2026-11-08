@@ -26,11 +26,11 @@ shared cluster on your behalf.
 Exactly the repos in
 [`config/arc-register-allowlist.json`](../../config/arc-register-allowlist.json):
 
-- `izzywdev/FuzeContact`
-- `izzywdev/FuzeHub`
-- `izzywdev/FuzeSales`
-- `izzywdev/FuzeService`
-- `izzywdev/FuzeSocial`
+- `FuzeOne/FuzeContact`
+- `FuzeOne/FuzeHub`
+- `FuzeOne/FuzeSales`
+- `FuzeOne/FuzeService`
+- `FuzeOne/FuzeSocial`
 - `izzywdev/MendysRobotics`
 
 **A repo not on that list is refused, loudly, before any kubectl/helm step
@@ -59,15 +59,15 @@ for how to mint one. **No new credential, and — this is the point — no
 
 ```bash
 # install (or upgrade in place — idempotent)
-gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
   -f event_type=arc-register \
-  -f 'client_payload[repo]=izzywdev/FuzeHub' \
+  -f 'client_payload[repo]=FuzeOne/FuzeHub' \
   -f 'client_payload[action]=install'
 
 # uninstall
-gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
   -f event_type=arc-register \
-  -f 'client_payload[repo]=izzywdev/FuzeHub' \
+  -f 'client_payload[repo]=FuzeOne/FuzeHub' \
   -f 'client_payload[action]=uninstall'
 ```
 
@@ -80,10 +80,10 @@ gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
 Neither dispatch event returns a run id, and the run takes a moment to appear:
 
 ```bash
-RUN=$(gh run list --repo izzywdev/FuzeInfra --workflow=arc-register.yml \
+RUN=$(gh run list --repo FuzeOne/FuzeInfra --workflow=arc-register.yml \
         --event=repository_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
-gh run watch "$RUN" --repo izzywdev/FuzeInfra --exit-status
-gh run view  "$RUN" --repo izzywdev/FuzeInfra --log
+gh run watch "$RUN" --repo FuzeOne/FuzeInfra --exit-status
+gh run view  "$RUN" --repo FuzeOne/FuzeInfra --log
 ```
 
 If your repo happens to listen for `repository_dispatch` events of type
@@ -110,7 +110,7 @@ runners API for your repo** — not FuzeInfra's — for up to 5 minutes until it
 sees a runner carrying your scale-set's label report `status: online`:
 
 ```bash
-gh api repos/izzywdev/FuzeHub/actions/runners --jq '.runners[] | "\(.name) \(.status)"'
+gh api repos/FuzeOne/FuzeHub/actions/runners --jq '.runners[] | "\(.name) \(.status)"'
 ```
 
 If that never happens, the job fails with the specific things to check next

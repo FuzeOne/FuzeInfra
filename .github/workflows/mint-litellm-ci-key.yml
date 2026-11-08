@@ -15,8 +15,8 @@ name: Mint LITELLM_CI_KEY
 # which hit the same constraint first.
 #
 # Write targets:
-#   izzywdev/FuzeInfra  — a2a-maintain.yml reads LITELLM_CI_KEY directly from here
-#   izzywdev/FuzeSDLC   — SRC_LITELLM_CI_KEY, the source-of-truth value
+#   FuzeOne/FuzeInfra  — a2a-maintain.yml reads LITELLM_CI_KEY directly from here
+#   FuzeOne/FuzeSDLC   — SRC_LITELLM_CI_KEY, the source-of-truth value
 #                         provision_secrets.py reads back out (FuzeSDLC PR: fleet
 #                         discovery + LITELLM_CI_KEY fix)
 #
@@ -83,8 +83,8 @@ jobs:
 
           # 1. Register on this repo so a2a-maintain.yml can use it directly.
           printf '%s' "$KEY" | gh secret set LITELLM_CI_KEY \
-            --repo izzywdev/FuzeInfra
-          echo "::notice::LITELLM_CI_KEY written to izzywdev/FuzeInfra"
+            --repo FuzeOne/FuzeInfra
+          echo "::notice::LITELLM_CI_KEY written to FuzeOne/FuzeInfra"
 
           # 2. Write the source-of-truth copy to FuzeSDLC (SRC_LITELLM_CI_KEY).
           #    Unlike LITELLM_FUZE_KEY, this key is FuzeInfra-only (only FuzeInfra's own
@@ -92,5 +92,5 @@ jobs:
           #    provision_secrets.py's per-repo workflow survey — not the fleet-wide
           #    MANIFEST_RULES — is what delivers it, and it lands nowhere else.
           printf '%s' "$KEY" | gh secret set SRC_LITELLM_CI_KEY \
-            --repo izzywdev/FuzeSDLC
-          echo "::notice::SRC_LITELLM_CI_KEY written to izzywdev/FuzeSDLC (source of truth for provision_secrets.py)"
+            --repo FuzeOne/FuzeSDLC
+          echo "::notice::SRC_LITELLM_CI_KEY written to FuzeOne/FuzeSDLC (source of truth for provision_secrets.py)"

@@ -5,8 +5,8 @@
   "allowed_roles": ["workload"],
   "max_nodes_per_request": 3,
   "allowed_repos": [
-    "izzywdev/FuzeFront",
+    "FuzeOne/FuzeFront",
     "izzywdev/MendysRobotics",
-    "izzywdev/FuzePlan"
+    "FuzeOne/FuzePlan"
   ]
 }

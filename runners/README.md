@@ -3,7 +3,7 @@
 > as written — there is no `github.com/organizations/izzywdev`. Until the repos
 > move to the new **`fuzeone` org**, self-hosted runners register at **repo level**
 > (the ARC scale sets are per-repo; the `kind-host` runner registered against
-> `izzywdev/FuzeInfra`). Re-do this org-level once repos are under `fuzeone`.
+> `FuzeOne/FuzeInfra`). Re-do this org-level once repos are under `fuzeone`.
 >
 > **Two runners exist:** (1) **`kind-host`** — a classic runner **process on the
 > developer Windows host** (not a container) that drives Docker Desktop + kind;

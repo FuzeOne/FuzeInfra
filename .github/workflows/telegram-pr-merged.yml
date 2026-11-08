@@ -2,7 +2,7 @@
 name: Notify Telegram on PR merge
 
 # SELF-CONTAINED (inlined) as of the FuzeSDLC#758 fix. This job used to be a `uses:`
-# call into izzywdev/FuzeSDLC's reusable-telegram-pr-merged.yml. A PUBLIC repo cannot
+# call into FuzeOne/FuzeSDLC's reusable-telegram-pr-merged.yml. A PUBLIC repo cannot
 # resolve a reusable workflow hosted in a PRIVATE repo -- FuzeSDLC is private -- so on
 # every oss-public consumer (FuzeInfra, FuzeFront, FuzeAgent, FuzeKeys, FuzeX) this
 # call failed at STARTUP ("workflow was not found") and the notification had never

@@ -12,7 +12,7 @@ spec:
   project: fuzeinfra
   
   source:
-    repoURL: 'https://github.com/izzywdev/FuzeInfra'
+    repoURL: 'https://github.com/FuzeOne/FuzeInfra'
     path: argocd/health-monitoring
     targetRevision: main
     

@@ -7,7 +7,7 @@
 # Required secrets in your repo:
 #   KUBE_CONFIG           — base64-encoded kubeconfig for the FuzeInfra cluster
 #                           (copy from FuzeInfra repo or ask infra team)
-#   GH_APP_ID             — GitHub App ID (from izzywdev/FuzeInfra runner app)
+#   GH_APP_ID             — GitHub App ID (from FuzeOne/FuzeInfra runner app)
 #   GH_APP_INSTALLATION_ID — Installation ID for THIS repo
 #   GH_APP_PRIVATE_KEY    — PEM-encoded private key (set as multiline secret)
 #
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: izzywdev/FuzeInfra
+          repository: FuzeOne/FuzeInfra
           ref: main
           sparse-checkout: |
             runners/arc/register-repo.sh

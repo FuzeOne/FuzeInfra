@@ -37,7 +37,7 @@
 # The same value must be sealed into fuzefront/fuzefront-secrets as
 # ARGOCD_CLIENT_SECRET, which is what Authentik's blueprint reads.
 #
-# The provider/application are defined in izzywdev/FuzeFront at
+# The provider/application are defined in FuzeOne/FuzeFront at
 # deploy/helm/fuzefront/authentik/blueprints/provider-oidc-fuzeinfra-admin.yaml.
 # The `argocd` application slug there is what makes this issuer URL resolve.
 apiVersion: v1

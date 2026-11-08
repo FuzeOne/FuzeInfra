@@ -8,7 +8,7 @@
       "owner": "@izzywdev",
       "$comment": "Repos with a2a.enabled=true and zero bundle skills declared on their serving roles, measured on their LIVE default branch 2026-08-23. Claiming one means giving its serving role a real skills[] list pointing at real .claude/skills/<name>/SKILL.md bundles. Removing the last entry is the trigger to set adoption=fail.",
       "knownUnadopted": [
-        "izzywdev/FuzeFront",
+        "FuzeOne/FuzeFront",
         "izzywdev/fuzeagent",
         "izzywdev/fuzebi",
         "izzywdev/fuzehub",

@@ -47,7 +47,7 @@ jobs:
             "token=@${token_file}" \
             --out deploy/sealed-secrets/fuzequality-chroma-credentials.yaml
 
-          gh repo clone izzywdev/FuzeFront "$app_dir" -- --depth 1 --branch master
+          gh repo clone FuzeOne/FuzeFront "$app_dir" -- --depth 1 --branch master
           bash scripts/seal-secret.sh fuzequality/fuzequality-chroma-credentials \
             "token=@${token_file}" \
             --out "$app_dir/FuzeQuality/deploy/helm/fuzequality/templates/chroma-sealed-secret.yaml"
@@ -59,7 +59,7 @@ jobs:
           git -C "$app_dir" add FuzeQuality/deploy/helm/fuzequality/templates/chroma-sealed-secret.yaml
           git -C "$app_dir" commit -m "chore(fuzequality): seal Chroma credentials [skip ci]"
           git -C "$app_dir" push origin "$app_branch"
-          gh pr create --repo izzywdev/FuzeFront --base master --head "$app_branch" \
+          gh pr create --repo FuzeOne/FuzeFront --base master --head "$app_branch" \
             --title "chore(fuzequality): seal Chroma credentials" \
             --body "Coordinated ciphertext-only rotation from FuzeInfra run ${RUN_ID}. The token is strictly sealed for namespace \`fuzequality\` and Secret \`fuzequality-chroma-credentials\`. Merge together with the companion FuzeInfra rotation PR."
 
@@ -70,6 +70,6 @@ jobs:
           git add deploy/sealed-secrets/fuzequality-chroma-credentials.yaml
           git commit -m "chore(chroma): rotate FuzeQuality credentials [skip ci]"
           git push origin "$infra_branch"
-          gh pr create --repo izzywdev/FuzeInfra --base main --head "$infra_branch" \
+          gh pr create --repo FuzeOne/FuzeInfra --base main --head "$infra_branch" \
             --title "chore(chroma): rotate FuzeQuality credentials" \
             --body "Coordinated ciphertext-only rotation from run ${RUN_ID}. The same token is separately sealed for FuzeInfra and FuzeQuality namespaces. Merge together with the companion FuzeFront rotation PR."

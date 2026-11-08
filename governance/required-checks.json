@@ -43,7 +43,7 @@
   "never_require": {
     "gate-code-review": "Report-only by design AND self-hosted. Routes through an in-cluster LiteLLM gateway reachable only from the `fuzefront` ARC scale set; skips rather than reds when it cannot route, deliberately. Observed `queued` on 4/4 recent FuzeFront PR heads. Permanently violates the self-hosted invariant. Read its header comment in harden-gate.yml before revisiting.",
     "call-autofix": "Remediation job — runs BECAUSE something failed. Requiring it makes the repair a merge precondition, inverting the dependency.",
-    "claude-ci-autofix": "Remediation job. Same inversion as call-autofix. Retained here even after the caller stub was renamed to fuze-ci-autofix.yml (izzywdev/FuzeSDLC): FuzeFront, MendysRobotics and MendysRoboticsWP still call izzywdev/AITools/.github/workflows/claude-ci-autofix.yml@main directly and will keep reporting under this name until that follow-up (retiring AITools) lands. Remove once no caller anywhere emits it.",
+    "claude-ci-autofix": "Remediation job. Same inversion as call-autofix. Retained here even after the caller stub was renamed to fuze-ci-autofix.yml (FuzeOne/FuzeSDLC): FuzeFront, MendysRobotics and MendysRoboticsWP still call izzywdev/AITools/.github/workflows/claude-ci-autofix.yml@main directly and will keep reporting under this name until that follow-up (retiring AITools) lands. Remove once no caller anywhere emits it.",
     "fuze-ci-autofix": "Remediation job. Same inversion as call-autofix. The renamed caller stub (workflow-templates/fuze-ci-autofix.yml, formerly claude-ci-autofix.yml) — same reusable-claude-ci-autofix.yml behind it, same job id (call-autofix), listed separately only because the workflow FILE name changed and this policy is keyed for auditability by every name a caller can surface, not just the job id.",
     "Re-run action-download flakes": "Remediation job. Same inversion as call-autofix.",
     "Notify Team": "Notification side effect, asserts nothing about the PR. A paging outage would block merges.",
@@ -306,7 +306,7 @@
     },
     "FuzeFinance": {
       "visibility": "private",
-      "no_ruleset": "NO ruleset at all — `gh api repos/izzywdev/FuzeFinance/rulesets` returns []. The default branch is UNPROTECTED. Not a required-checks question; flagged because it is the same audit and it is worse than any finding here."
+      "no_ruleset": "NO ruleset at all — `gh api repos/FuzeOne/FuzeFinance/rulesets` returns []. The default branch is UNPROTECTED. Not a required-checks question; flagged because it is the same audit and it is worse than any finding here."
     },
     "fuzeservice": {
       "visibility": "private"

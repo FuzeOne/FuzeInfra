@@ -48,7 +48,7 @@ spec:
   # `fuzeinfra` AppProject does not allow that namespace).
   project: default
   source:
-    repoURL: https://github.com/izzywdev/FuzeInfra.git
+    repoURL: https://github.com/FuzeOne/FuzeInfra.git
     targetRevision: main
     path: deploy/longhorn-system
     directory:

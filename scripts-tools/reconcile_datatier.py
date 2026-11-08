@@ -343,7 +343,7 @@ def detect_gaps(manifest: dict, repo: str, values: dict) -> list[Gap]:
 # ---------------------------------------------------------------------------
 
 def _short_name(repo: str) -> str:
-    """izzywdev/FuzePlan → fuzeplan"""
+    """FuzeOne/FuzePlan → fuzeplan"""
     return repo.split("/", 1)[-1].lower()
 
 

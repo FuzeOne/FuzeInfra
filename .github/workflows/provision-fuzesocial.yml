@@ -7,7 +7,7 @@ name: Provision FuzeSocial database
 #   1. Generates a cryptographically random password for the fuzesocial_app role.
 #   2. Seals it as `fuzesocial-db-credentials` (key: password) for the
 #      fuzeinfra namespace — the provisioning Job reads it via secretKeyRef.
-#   3. Sets FUZESOCIAL_DB_PASSWORD on izzywdev/FuzeSocial so the app's own
+#   3. Sets FUZESOCIAL_DB_PASSWORD on FuzeOne/FuzeSocial so the app's own
 #      Helm chart / SealedSecrets can be generated from it.
 #   4. Flips the `fuzesocial` serviceDatabases gate to enabled:true in
 #      helm/fuzeinfra/values-contabo.yaml.
@@ -83,7 +83,7 @@ jobs:
           # Deliver plaintext password to FuzeSocial repo as a GH Actions secret
           # so its Helm chart can seal its own DATABASE_URL credential.
           gh secret set FUZESOCIAL_DB_PASSWORD \
-            --repo izzywdev/FuzeSocial \
+            --repo FuzeOne/FuzeSocial \
             --body "$db_password"
 
           # Flip the gate in values-contabo.yaml.
@@ -105,9 +105,9 @@ jobs:
                   helm/fuzeinfra/values-contabo.yaml
           git commit -m "feat(postgres): provision FuzeSocial database (#149)"
           git push origin "$branch"
-          pr_body="Provisions the fuzesocial database and fuzesocial_app role on the shared FuzeInfra Postgres cluster. Adds strict-scoped ciphertext for the fuzeinfra/fuzesocial-db-credentials Secret and flips the serviceDatabases gate to enabled:true. FUZESOCIAL_DB_PASSWORD is now set on izzywdev/FuzeSocial. No plaintext secret material. Closes #149."
+          pr_body="Provisions the fuzesocial database and fuzesocial_app role on the shared FuzeInfra Postgres cluster. Adds strict-scoped ciphertext for the fuzeinfra/fuzesocial-db-credentials Secret and flips the serviceDatabases gate to enabled:true. FUZESOCIAL_DB_PASSWORD is now set on FuzeOne/FuzeSocial. No plaintext secret material. Closes #149."
           gh pr create \
-            --repo izzywdev/FuzeInfra \
+            --repo FuzeOne/FuzeInfra \
             --base main \
             --head "$branch" \
             --title "feat(postgres): provision FuzeSocial database" \

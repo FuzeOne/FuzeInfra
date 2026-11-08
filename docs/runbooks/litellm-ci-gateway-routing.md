@@ -47,7 +47,7 @@ fans them out to every repo that installs `fuze.yml`. The `client_secret` lives
 only in terraform state (S3 backend); extract it from a **local terminal** and
 never print, paste, or commit it.
 
-1. **Set the two source secrets on FuzeSDLC** (`izzywdev/FuzeSDLC` → Settings →
+1. **Set the two source secrets on FuzeSDLC** (`FuzeOne/FuzeSDLC` → Settings →
    Secrets → Actions), with the values from FuzeInfra terraform:
 
    ```bash

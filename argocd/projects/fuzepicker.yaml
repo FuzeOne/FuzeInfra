@@ -25,7 +25,7 @@ metadata:
 spec:
   description: FuzePicker product (consumer of FuzeInfra) — may deploy ONLY into its own namespace.
   sourceRepos:
-    - https://github.com/izzywdev/FuzePicker.git
+    - https://github.com/FuzeOne/FuzePicker.git
   destinations:
     # The product's workloads.
     - namespace: fuzepicker

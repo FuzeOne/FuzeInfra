@@ -12,9 +12,9 @@
 # networking) — that needs NO Argo destination into `fuzeinfra`.
 #
 # WHY A NEW PROJECT (and not `fuzefront`): FuzeMarket registers itself with the
-# FuzeFront portal at startup, but it is a SEPARATE repo (izzywdev/FuzeMarket) with
+# FuzeFront portal at startup, but it is a SEPARATE repo (FuzeOne/FuzeMarket) with
 # a SEPARATE workload namespace. The `fuzefront` project pins `sourceRepos` to
-# izzywdev/FuzeFront.git and its destinations to fuzefront/fuzequality, so reusing
+# FuzeOne/FuzeFront.git and its destinations to fuzefront/fuzequality, so reusing
 # it would mean widening FuzeFront's boundary to cover an unrelated repo. Talking
 # to FuzeFront over service DNS needs no shared Argo project.
 #
@@ -33,7 +33,7 @@ metadata:
 spec:
   description: FuzeMarket product (consumer of FuzeInfra) — may deploy ONLY into its own namespace.
   sourceRepos:
-    - https://github.com/izzywdev/FuzeMarket.git
+    - https://github.com/FuzeOne/FuzeMarket.git
   destinations:
     # The product's workloads.
     - namespace: fuzemarket

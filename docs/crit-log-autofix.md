@@ -45,7 +45,7 @@ fuzeinfra.io/owner-repo: <owner>/<repo>
 3. Validate it matches `^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$`.
 4. File the issue there: `gh issue create --repo "$owner_repo" …` (with cross-repo dedup).
 
-**Fallback** to `izzywdev/FuzeInfra` when the namespace is missing/unknown, not
+**Fallback** to `FuzeOne/FuzeInfra` when the namespace is missing/unknown, not
 found, unannotated, or the value is invalid.
 
 **One path for every owner — always via `@fuze`:** the workflow opens ONE
@@ -74,7 +74,7 @@ kubectl annotate namespace <namespace> \
   fuzeinfra.io/owner-repo=<owner>/<repo> --overwrite
 # e.g.
 kubectl annotate namespace fuzefront \
-  fuzeinfra.io/owner-repo=izzywdev/FuzeFront --overwrite
+  fuzeinfra.io/owner-repo=FuzeOne/FuzeFront --overwrite
 ```
 
 FuzeInfra's own `fuzeinfra` namespace is annotated automatically by Argo CD
@@ -118,7 +118,7 @@ The Worker stays thin: validate bearer token, check `status == "firing"`, forwar
 - Cloudflare Worker at `crit-alert.prod.fuzefront.com`
 - Validates `Authorization: Bearer $BRIDGE_TOKEN`
 - Ignores resolved alerts (`status != "firing"`)
-- Calls `POST /repos/izzywdev/FuzeInfra/dispatches`. Event type depends on `?source=`:
+- Calls `POST /repos/FuzeOne/FuzeInfra/dispatches`. Event type depends on `?source=`:
   default → `grafana-crit-alert` (Grafana log alerts); `?source=alertmanager` →
   `alertmanager-alert` (Prometheus/Alertmanager metric alerts — see below)
 - Worker secrets managed in Terraform state via `cloudflare_worker_script` bindings

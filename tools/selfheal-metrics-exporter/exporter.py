@@ -91,7 +91,7 @@ def _label_system_map() -> dict[str, str]:
         return dict(DEFAULT_LABEL_SYSTEM_MAP)
 
 
-REPO = os.environ.get("GITHUB_REPO", "izzywdev/FuzeInfra")
+REPO = os.environ.get("GITHUB_REPO", "FuzeOne/FuzeInfra")
 POLL_INTERVAL_SECONDS = _env_int("POLL_INTERVAL_SECONDS", 600)
 LISTEN_PORT = _env_int("LISTEN_PORT", 9109)
 LABEL_SYSTEM_MAP = _label_system_map()

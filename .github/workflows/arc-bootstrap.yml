@@ -104,12 +104,12 @@ jobs:
           # izzywdev is a personal account → repo-scoped runners only
           echo "Waiting for a [self-hosted, staging] runner to appear..."
           for i in $(seq 1 20); do
-            COUNT=$(gh api repos/izzywdev/FuzeInfra/actions/runners \
+            COUNT=$(gh api repos/FuzeOne/FuzeInfra/actions/runners \
               --jq '[.runners[] | select(.labels[].name == "staging")] | length' 2>/dev/null || echo "0")
             echo "  attempt $i/20: $COUNT staging runner(s) registered"
             if [ "$COUNT" -gt "0" ]; then
               echo "Runner is online!"
-              gh api repos/izzywdev/FuzeInfra/actions/runners \
+              gh api repos/FuzeOne/FuzeInfra/actions/runners \
                 --jq '.runners[] | select(.labels[].name == "staging") | "  \(.name) status=\(.status)"'
               exit 0
             fi

@@ -69,7 +69,7 @@
 # arc-repair-drifted-scaleset / deploy-prod.
 #
 # Example:
-#   gh workflow run arc-recreate-stuck-scaleset.yml --repo izzywdev/FuzeInfra \
+#   gh workflow run arc-recreate-stuck-scaleset.yml --repo FuzeOne/FuzeInfra \
 #     -f scale_sets="mendysrobotics" -f confirm=RECREATE
 
 name: arc-recreate-stuck-scaleset

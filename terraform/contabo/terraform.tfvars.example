@@ -49,7 +49,7 @@ domain = ""
 # Create at: https://github.com/settings/tokens
 # -----------------------------------------------------------------------
 github_token = ""
-github_owner = "izzywdev"
+github_owner = "FuzeOne"
 github_repo  = "FuzeInfra"
 
 # -----------------------------------------------------------------------

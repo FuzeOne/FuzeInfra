@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/izzywdev/FuzeSDLC/agent-templates/memory.schema.json",
+  "$id": "https://github.com/FuzeOne/FuzeSDLC/agent-templates/memory.schema.json",
   "title": "Managed-Agents memory-store template",
   "description": "A memory store (POST /v1/memory_stores) plus optional seed memories. Beta header agent-memory-2026-07-22.",
   "type": "object",

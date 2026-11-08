@@ -128,7 +128,7 @@ class CoverageTest(unittest.TestCase):
             json.dump(registry("fuzemarket"), fh)
             path = fh.name
         junk = [None, {}, {"repository": None}, "nonsense",
-                {"repository": {"nameWithOwner": "izzywdev/FuzeMarket"}}]
+                {"repository": {"nameWithOwner": "FuzeOne/FuzeMarket"}}]
         calls = {"n": 0}
 
         def fake_gh(*a):

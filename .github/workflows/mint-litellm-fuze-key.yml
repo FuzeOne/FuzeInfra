@@ -7,8 +7,8 @@ name: Mint LITELLM_FUZE_KEY
 # http://litellm.fuzeinfra.svc.cluster.local:4000 without a port-forward.
 #
 # Write targets:
-#   izzywdev/FuzeInfra  — fuze.yml reads LITELLM_FUZE_KEY directly from here
-#   izzywdev/FuzeSDLC   — provision_secrets.py (FuzeSDLC#181) distributes it
+#   FuzeOne/FuzeInfra  — fuze.yml reads LITELLM_FUZE_KEY directly from here
+#   FuzeOne/FuzeSDLC   — provision_secrets.py (FuzeSDLC#181) distributes it
 #                         to every repo declaring a2a.enabled or mcp.enabled
 #
 # Prerequisites (secrets that must already exist in the repo):
@@ -71,12 +71,12 @@ jobs:
           # 1. Register on this repo so fuze.yml can use it directly.
           #    FuzeInfra has a2a.enabled=false so the fleet provisioner skips it.
           printf '%s' "$KEY" | gh secret set LITELLM_FUZE_KEY \
-            --repo izzywdev/FuzeInfra
-          echo "::notice::LITELLM_FUZE_KEY written to izzywdev/FuzeInfra"
+            --repo FuzeOne/FuzeInfra
+          echo "::notice::LITELLM_FUZE_KEY written to FuzeOne/FuzeInfra"
 
           # 2. Hand off to the fleet provisioner (FuzeSDLC#181).
           #    provision_secrets.py distributes LITELLM_FUZE_KEY to every repo
           #    whose .fuze/manifest.json declares a2a.enabled or mcp.enabled.
           printf '%s' "$KEY" | gh secret set LITELLM_FUZE_KEY \
-            --repo izzywdev/FuzeSDLC
-          echo "::notice::LITELLM_FUZE_KEY handed off to izzywdev/FuzeSDLC fleet provisioner"
+            --repo FuzeOne/FuzeSDLC
+          echo "::notice::LITELLM_FUZE_KEY handed off to FuzeOne/FuzeSDLC fleet provisioner"

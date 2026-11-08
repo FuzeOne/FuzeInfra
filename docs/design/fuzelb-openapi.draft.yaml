@@ -50,7 +50,7 @@ info:
     `If-Match: <etag>`; a stale ETag is 412.
   contact:
     name: FuzeInfra
-    url: https://github.com/izzywdev/FuzeInfra
+    url: https://github.com/FuzeOne/FuzeInfra
 
 servers:
   - url: https://api.fuzefront.com/lb/v1

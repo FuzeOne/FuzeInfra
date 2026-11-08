@@ -15,7 +15,7 @@ spec.loader.exec_module(module)
 
 REQUEST = {
     "service": "fuzex", "role": "fuzex_svc", "database": "fuzex_design_frames",
-    "consumerRepo": "izzywdev/FuzeX", "handoffId": "fuzex-postgres",
+    "consumerRepo": "FuzeOne/FuzeX", "handoffId": "fuzex-postgres",
     "target": {"namespace": "fuzex", "secretName": "fuzex-design-frames-db",
                "manifestPath": "deploy/helm/fuzex/files/secrets/design-frames-db-sealed.yaml", "branch": "master"},
 }

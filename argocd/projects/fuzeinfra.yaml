@@ -7,7 +7,7 @@ metadata:
 spec:
   description: FuzeInfra shared infrastructure platform
   sourceRepos:
-    - https://github.com/izzywdev/FuzeInfra.git
+    - https://github.com/FuzeOne/FuzeInfra.git
     # OCI Helm registry for the ARC runner scale-set chart. Required by the
     # arc-runner-scale-sets ApplicationSet (multi-source: OCI chart + git values).
     # Without this entry Argo rejects those Applications with

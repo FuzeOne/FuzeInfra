@@ -42,7 +42,7 @@ metadata:
 data:
   # ---- service: POST a repository_dispatch to this repo --------------------
   service.webhook.github-dispatch: |
-    url: https://api.github.com/repos/izzywdev/FuzeInfra/dispatches
+    url: https://api.github.com/repos/FuzeOne/FuzeInfra/dispatches
     headers:
       - name: Authorization
         value: token $github-token

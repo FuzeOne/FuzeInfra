@@ -6,7 +6,7 @@ metadata:
 spec:
   description: FuzeBI product (consumer of FuzeInfra) — may deploy ONLY into its own namespace.
   sourceRepos:
-    - https://github.com/izzywdev/FuzeBI.git
+    - https://github.com/FuzeOne/FuzeBI.git
   destinations:
     - namespace: fuzebi
       server: https://kubernetes.default.svc

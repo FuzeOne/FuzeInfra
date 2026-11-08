@@ -18,7 +18,7 @@ FuzeInfra runs two ways — pick one:
 
 ### A) Docker Compose (fastest local path)
 
-1. **Clone repository**: `git clone --recursive https://github.com/izzywdev/FuzeInfra.git`
+1. **Clone repository**: `git clone --recursive https://github.com/FuzeOne/FuzeInfra.git`
 2. **Set up environment**: `python scripts-tools/setup_environment.py`
 3. **Generate certificates**: `./tools/cert-manager/setup-local-certs.sh`
 4. **Start infrastructure**: `./infra-up.bat` (Windows) or `./infra-up.sh` (Linux/Mac)

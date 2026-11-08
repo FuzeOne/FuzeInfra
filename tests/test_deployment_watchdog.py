@@ -66,7 +66,7 @@ def _no_live_github(monkeypatch):
     Every GitHub side effect in the watchdog funnels through `wd.gh`, and the
     issue helpers act on the LIVE repo passed via --repo. A test that forgets to
     stub one of them silently lists — and could comment on or close — real
-    issues in izzywdev/FuzeInfra. That nearly happened when the clean-run path
+    issues in FuzeOne/FuzeInfra. That nearly happened when the clean-run path
     gained an auto-close: test_no_findings_files_nothing_and_exits_zero made a
     real `gh issue list` call and passed only because no stuck-argo-op issue
     happened to be open. Tests that need GitHub behaviour stub the specific
@@ -725,7 +725,7 @@ def _stuck_finding():
 
 def test_existing_open_issue_is_not_refiled():
     finding = _stuck_finding()
-    existing = [{"number": 744, "url": "https://github.com/izzywdev/FuzeInfra/issues/744",
+    existing = [{"number": 744, "url": "https://github.com/FuzeOne/FuzeInfra/issues/744",
                  "title": "anything a human renamed it to",
                  "body": f"{finding.marker}\n\n@fuze ..."}]
     new, duplicates = wd.filter_new_findings([finding], existing)
@@ -796,8 +796,8 @@ def test_unreachable_cluster_exits_nonzero_and_never_reports_clear(monkeypatch, 
 
     # main() propagates; run() is the process entrypoint and maps it to exit 2.
     with pytest.raises(wd.ClusterUnreachable):
-        wd.main(["--repo", "izzywdev/FuzeInfra", "--dry-run"])
-    assert wd.run(["--repo", "izzywdev/FuzeInfra", "--dry-run"]) == 2
+        wd.main(["--repo", "FuzeOne/FuzeInfra", "--dry-run"])
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra", "--dry-run"]) == 2
 
     out = capsys.readouterr().out
     assert "::error::" in out
@@ -874,7 +874,7 @@ def test_exec_df_fallback_refuses_injected_names():
 
 def test_terminate_op_dispatch_validates_the_app_name():
     with pytest.raises(wd.UnsafeCommand):
-        wd.dispatch_terminate_op("izzywdev/FuzeInfra", "argo-terminate-op.yml",
+        wd.dispatch_terminate_op("FuzeOne/FuzeInfra", "argo-terminate-op.yml",
                                  "fuzeinfra-prod; curl evil")
 
 
@@ -954,7 +954,7 @@ def test_end_to_end_caps_issues_filed_reports_everything_and_dispatches_terminat
     monkeypatch.setattr(wd, "dispatch_terminate_op",
                         lambda repo, wf, app, ref="main": dispatched.append(app))
 
-    exit_code = wd.main(["--repo", "izzywdev/FuzeInfra"])
+    exit_code = wd.main(["--repo", "FuzeOne/FuzeInfra"])
 
     assert exit_code == 1  # findings -> red run, so the freeze is visible in Actions
     assert len(filed) == CFG["issues"]["max_per_run"] < 21
@@ -969,7 +969,7 @@ def test_no_findings_files_nothing_and_exits_zero(monkeypatch):
     monkeypatch.setattr(wd, "collect_pvc_usage", lambda p, cfg: ([], "prometheus"))
     monkeypatch.setattr(wd, "list_open_watchdog_issues", lambda repo, label: [])
     monkeypatch.setattr(wd, "create_issue", lambda *a, **k: pytest.fail("filed an issue with no findings"))
-    assert wd.main(["--repo", "izzywdev/FuzeInfra"]) == 0
+    assert wd.main(["--repo", "FuzeOne/FuzeInfra"]) == 0
 
 
 # ---------------------------------------------------------------------------
@@ -1038,7 +1038,7 @@ def test_open_issue_ceiling_still_holds_back_noise(monkeypatch):
     monkeypatch.setattr(wd, "ensure_label", lambda *a, **k: pytest.fail("touched labels with no slot"))
     monkeypatch.setattr(wd, "create_issue", lambda *a, **k: filed.append(a) or "url")
 
-    exit_code = wd.main(["--repo", "izzywdev/FuzeInfra"])
+    exit_code = wd.main(["--repo", "FuzeOne/FuzeInfra"])
 
     assert filed == []
     # Detection is NOT capped: the condition is still reported and the run is red.
@@ -1064,7 +1064,7 @@ def test_open_issue_ceiling_never_starves_a_stuck_argo_op(monkeypatch):
     monkeypatch.setattr(wd, "dispatch_terminate_op",
                         lambda repo, wf, app, ref="main": dispatched.append(app))
 
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
 
     assert filed == ["[watchdog] stuck-argo-op: fuzeinfra-prod"]
     assert dispatched == ["fuzeinfra-prod"]
@@ -1082,7 +1082,7 @@ def test_ceiling_leaves_room_for_a_partial_batch(monkeypatch):
     monkeypatch.setattr(wd, "ensure_label", lambda *a, **k: None)
     monkeypatch.setattr(wd, "create_issue", lambda *a, **k: filed.append(a) or "url")
 
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert len(filed) == 3
 
 
@@ -1100,7 +1100,7 @@ WEDGED = {"items": [argo_app("fuzeinfra-prod", "Running", 47 * 60,
 
 
 def _stale_argo_issue(body_extra=""):
-    return {"number": 776, "url": "https://github.com/izzywdev/FuzeInfra/issues/776",
+    return {"number": 776, "url": "https://github.com/FuzeOne/FuzeInfra/issues/776",
             "title": "[watchdog] stuck-argo-op: fuzeinfra-prod", "body": ARGO_KEY + body_extra}
 
 
@@ -1123,7 +1123,7 @@ def _wire(monkeypatch, apps, open_issues, comments=()):
 
 def test_already_tracked_argo_wedge_is_still_terminated(monkeypatch):
     calls = _wire(monkeypatch, WEDGED, [_stale_argo_issue()])
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["dispatched"] == ["fuzeinfra-prod"]
     assert calls["filed"] == []  # still deduplicated — no second issue
     (number, body), = calls["commented"]
@@ -1136,7 +1136,7 @@ def test_already_terminated_operation_is_not_re_dispatched(monkeypatch):
     """Bounded: one terminate per operation, never every 15 minutes."""
     marker = wd.argo_terminated_marker("fuzeinfra-prod", _ts(47 * 60))
     calls = _wire(monkeypatch, WEDGED, [_stale_argo_issue()], comments=[{"body": marker}])
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["dispatched"] == []
 
 
@@ -1144,7 +1144,7 @@ def test_run_that_filed_the_issue_is_not_followed_by_a_second_terminate(monkeypa
     """A newly filed issue carries the marker in its body, so the next run skips it."""
     marker = wd.argo_terminated_marker("fuzeinfra-prod", _ts(47 * 60))
     calls = _wire(monkeypatch, WEDGED, [_stale_argo_issue(body_extra=marker)])
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["dispatched"] == []
 
 
@@ -1152,7 +1152,7 @@ def test_a_new_operation_on_the_same_app_is_terminated_again(monkeypatch):
     """A marker for an OLDER op must not suppress action on a new wedge."""
     old = wd.argo_terminated_marker("fuzeinfra-prod", _ts(20 * 24 * 60))
     calls = _wire(monkeypatch, WEDGED, [_stale_argo_issue()], comments=[{"body": old}])
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["dispatched"] == ["fuzeinfra-prod"]
 
 
@@ -1160,7 +1160,7 @@ def test_newly_filed_argo_issue_records_the_terminated_operation(monkeypatch):
     bodies = []
     calls = _wire(monkeypatch, WEDGED, [])
     monkeypatch.setattr(wd, "create_issue", lambda repo, label, t, b: bodies.append(b) or "url")
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["dispatched"] == ["fuzeinfra-prod"]
     assert wd.argo_terminated_marker("fuzeinfra-prod", _ts(47 * 60)) in bodies[0]
 
@@ -1170,7 +1170,7 @@ def test_newly_filed_argo_issue_records_the_terminated_operation(monkeypatch):
 def test_resolved_argo_issue_is_closed_on_a_clean_run(monkeypatch):
     """The early return on zero findings used to skip ALL issue handling."""
     calls = _wire(monkeypatch, {"items": []}, [_stale_argo_issue()])
-    assert wd.main(["--repo", "izzywdev/FuzeInfra"]) == 0
+    assert wd.main(["--repo", "FuzeOne/FuzeInfra"]) == 0
     assert calls["closed"] == [776]
 
 
@@ -1178,26 +1178,26 @@ def test_resolved_argo_issue_is_closed_alongside_other_findings(monkeypatch):
     calls = _wire(monkeypatch, {"items": []}, [_stale_argo_issue()])
     monkeypatch.setattr(wd, "collect_cluster_state",
                         lambda cfg: ({"items": []}, _crashloop_pods(1), {"items": []}))
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["closed"] == [776]
 
 
 def test_still_wedged_argo_issue_is_not_closed(monkeypatch):
     calls = _wire(monkeypatch, WEDGED, [_stale_argo_issue()])
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["closed"] == []
 
 
 def test_unreadable_application_list_never_mass_closes(monkeypatch):
     """No 'items' key is not evidence of recovery."""
     calls = _wire(monkeypatch, {}, [_stale_argo_issue()])
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["closed"] == []
 
 
 def test_dry_run_closes_nothing(monkeypatch):
     calls = _wire(monkeypatch, {"items": []}, [_stale_argo_issue()])
-    wd.main(["--repo", "izzywdev/FuzeInfra", "--dry-run"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra", "--dry-run"])
     assert calls["closed"] == []
 
 
@@ -1210,7 +1210,7 @@ def test_closing_frees_the_slot_for_the_same_run(monkeypatch):
     calls = _wire(monkeypatch, {"items": []}, open_issues)
     monkeypatch.setattr(wd, "collect_cluster_state",
                         lambda cfg: ({"items": []}, _crashloop_pods(1), {"items": []}))
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["closed"] == [776]
     assert len(calls["filed"]) == 1
 
@@ -1289,7 +1289,7 @@ def _churned_backup_issue(pod_name="fuzeinfra-backup-mongodb-29820980-8mcg8"):
     instance = f"<!-- watchdog-instance: {pod_name} -->"
     return {
         "number": 1062,
-        "url": "https://github.com/izzywdev/FuzeInfra/issues/1062",
+        "url": "https://github.com/FuzeOne/FuzeInfra/issues/1062",
         "title": "[watchdog] stuck-containercreating: fuzeinfra/fuzeinfra-backup-mongodb",
         "body": f"{key}\n{instance}\n",
     }
@@ -1303,7 +1303,7 @@ def test_new_pod_instance_of_an_already_tracked_workload_is_not_refiled(monkeypa
     calls = _wire(monkeypatch, {"items": []}, [_churned_backup_issue()])
     monkeypatch.setattr(wd, "collect_cluster_state",
                         lambda cfg: ({"items": []}, {"items": [new_pod]}, {"items": []}))
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["filed"] == []
 
 
@@ -1314,7 +1314,7 @@ def test_new_pod_instance_updates_the_tracked_issue_with_a_comment(monkeypatch):
     calls = _wire(monkeypatch, {"items": []}, [_churned_backup_issue()])
     monkeypatch.setattr(wd, "collect_cluster_state",
                         lambda cfg: ({"items": []}, {"items": [new_pod]}, {"items": []}))
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     (number, body), = calls["commented"]
     assert number == 1062
     assert "fuzeinfra-backup-mongodb-30015550-p4x9z" in body
@@ -1327,7 +1327,7 @@ def test_same_pod_instance_duplicate_is_a_true_noop(monkeypatch):
     calls = _wire(monkeypatch, {"items": []}, [_churned_backup_issue()])
     monkeypatch.setattr(wd, "collect_cluster_state",
                         lambda cfg: ({"items": []}, {"items": [same_pod]}, {"items": []}))
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["filed"] == []
     assert calls["commented"] == []
 
@@ -1337,7 +1337,7 @@ def test_close_resolved_findings_closes_an_issue_no_longer_detected(monkeypatch)
     monkeypatch.setattr(wd, "comment_issue", lambda repo, n, b: commented.append(n))
     monkeypatch.setattr(wd, "close_issue", lambda repo, n: closed.append(n))
     still_open, closed_lines = wd.close_resolved_findings(
-        "izzywdev/FuzeInfra", [_churned_backup_issue()], wd.KIND_CREATING, active_keys=set(),
+        "FuzeOne/FuzeInfra", [_churned_backup_issue()], wd.KIND_CREATING, active_keys=set(),
     )
     assert still_open == []
     assert closed == [1062]
@@ -1348,7 +1348,7 @@ def test_close_resolved_findings_closes_an_issue_no_longer_detected(monkeypatch)
 def test_close_resolved_findings_leaves_a_still_active_issue_open():
     key = "stuck-containercreating:fuzeinfra/fuzeinfra-backup-mongodb"
     still_open, closed_lines = wd.close_resolved_findings(
-        "izzywdev/FuzeInfra", [_churned_backup_issue()], wd.KIND_CREATING, active_keys={key},
+        "FuzeOne/FuzeInfra", [_churned_backup_issue()], wd.KIND_CREATING, active_keys={key},
     )
     assert len(still_open) == 1
     assert closed_lines == []
@@ -1360,7 +1360,7 @@ def test_stuck_creating_issue_closes_when_the_workload_recovers(monkeypatch):
     calls = _wire(monkeypatch, {"items": []}, [_churned_backup_issue()])
     monkeypatch.setattr(wd, "collect_cluster_state",
                         lambda cfg: ({"items": []}, {"items": []}, {"items": []}))
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["closed"] == [1062]
 
 
@@ -1376,7 +1376,7 @@ def test_stuck_creating_issue_closes_when_the_workload_recovers(monkeypatch):
 # crashed, so nothing alerted. Same outcome as 2026-09-15..20 (42 runs, 0 actions),
 # a different cause — which is why this is pinned here beside it.
 
-CAP_MESSAGE = ("gh issue comment 1062 --repo izzywdev/FuzeInfra --body-file x.md exited 1: "
+CAP_MESSAGE = ("gh issue comment 1062 --repo FuzeOne/FuzeInfra --body-file x.md exited 1: "
                "GraphQL: Commenting is disabled on issues with more than 2500 comments "
                "(addComment)")
 
@@ -1409,13 +1409,13 @@ def test_a_comment_capped_issue_does_not_abort_the_run(monkeypatch):
     _wire_capped(monkeypatch, {1062})
     # Findings are present, so the run is red by design (1) — but NOT the
     # "could not complete" exit (2) that meant it had gone blind.
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 1
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 1
 
 
 def test_a_stuck_argo_operation_is_still_terminated_after_a_capped_comment(monkeypatch):
     """The point of the whole fix: the code AFTER the failing comment must still run."""
     calls = _wire_capped(monkeypatch, {1062})
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["dispatched"] == ["fuzeinfra-prod"]
     (number, body), = calls["commented"]
     assert number == 776
@@ -1425,13 +1425,13 @@ def test_a_stuck_argo_operation_is_still_terminated_after_a_capped_comment(monke
 def test_a_capped_issue_is_closed_so_the_finding_refiles_fresh(monkeypatch):
     """Otherwise it dedupes every future occurrence against itself, forever."""
     calls = _wire_capped(monkeypatch, {1062})
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert calls["closed"] == [1062]
 
 
 def test_the_capped_issue_is_reported_in_the_summary(monkeypatch, capsys):
     _wire_capped(monkeypatch, {1062})
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     out = capsys.readouterr().out
     assert "comment cap" in out
     assert "::warning::" in out
@@ -1439,7 +1439,7 @@ def test_the_capped_issue_is_reported_in_the_summary(monkeypatch, capsys):
 
 def test_failing_to_close_a_capped_issue_is_reported_not_fatal(monkeypatch, capsys):
     calls = _wire_capped(monkeypatch, {1062}, close_fails=True)
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 1
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 1
     assert calls["dispatched"] == ["fuzeinfra-prod"]
     assert "could NOT be closed" in capsys.readouterr().out
 
@@ -1459,7 +1459,7 @@ def test_a_non_cap_comment_failure_is_also_non_fatal_but_does_not_close(monkeypa
         calls["commented"].append((number, body))
 
     monkeypatch.setattr(wd, "comment_issue", comment)
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 1
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 1
     assert calls["dispatched"] == ["fuzeinfra-prod"]
     assert calls["closed"] == []
 
@@ -1476,7 +1476,7 @@ def test_an_unreadable_cluster_is_still_fatal(monkeypatch):
     def boom(cfg):
         raise wd.ClusterUnreachable("kubectl failed")
     monkeypatch.setattr(wd, "collect_cluster_state", boom)
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 2
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 2
 
 
 # --- the call that ACTUALLY killed the runs (the first fix guarded the wrong one) --
@@ -1491,7 +1491,7 @@ def test_an_unreadable_cluster_is_still_fatal(monkeypatch):
 def _capped_resolved_issue():
     issue = _churned_backup_issue()
     issue.update({"number": 1238,
-                  "url": "https://github.com/izzywdev/FuzeInfra/issues/1238",
+                  "url": "https://github.com/FuzeOne/FuzeInfra/issues/1238",
                   "title": "[watchdog] stuck-containercreating: fuzeinfra/fuzeinfra-backup-neo4j"})
     issue["body"] = "<!-- watchdog-key: stuck-containercreating:fuzeinfra/fuzeinfra-backup-neo4j -->\n"
     return issue
@@ -1514,13 +1514,13 @@ def _wire_resolved_and_capped(monkeypatch):
 def test_a_resolved_but_comment_capped_issue_is_still_closed(monkeypatch):
     """The courtesy comment may be refused; the CLOSE must still happen."""
     calls = _wire_resolved_and_capped(monkeypatch)
-    wd.main(["--repo", "izzywdev/FuzeInfra"])
+    wd.main(["--repo", "FuzeOne/FuzeInfra"])
     assert 1238 in calls["closed"]
 
 
 def test_the_run_survives_and_still_terminates_the_argo_wedge(monkeypatch):
     calls = _wire_resolved_and_capped(monkeypatch)
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 1   # findings present, not blind
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 1   # findings present, not blind
     assert calls["dispatched"] == ["fuzeinfra-prod"]
 
 
@@ -1534,7 +1534,7 @@ def test_the_same_holds_on_a_clean_run_with_no_findings(monkeypatch):
     monkeypatch.setattr(wd, "comment_issue", comment)
     monkeypatch.setattr(wd, "collect_cluster_state",
                         lambda cfg: ({"items": []}, {"items": []}, {"items": []}))
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 0
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 0
     assert calls["closed"] == [1238]
 
 
@@ -1547,7 +1547,7 @@ def test_a_resolved_argo_issue_at_the_cap_is_still_closed(monkeypatch):
         raise wd.GitHubError(CAP_MESSAGE)
 
     monkeypatch.setattr(wd, "comment_issue", comment)
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 0
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 0
     assert calls["closed"] == [776]
 
 
@@ -1561,7 +1561,7 @@ def test_state_carrying_comments_are_still_strict(monkeypatch):
         raise wd.GitHubError(CAP_MESSAGE)
 
     monkeypatch.setattr(wd, "comment_issue", comment)
-    assert wd.run(["--repo", "izzywdev/FuzeInfra"]) == 2
+    assert wd.run(["--repo", "FuzeOne/FuzeInfra"]) == 2
 
 
 def test_comment_best_effort_reports_success_and_failure(monkeypatch, capsys):

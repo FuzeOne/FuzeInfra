@@ -30,7 +30,7 @@ metadata:
 spec:
   project: fuzeinfra
   source:
-    repoURL: https://github.com/izzywdev/FuzeInfra.git
+    repoURL: https://github.com/FuzeOne/FuzeInfra.git
     targetRevision: main
     path: helm/litellm
     helm:
@@ -54,7 +54,7 @@ spec:
     # emitting namespace to pick the issue repo).
     managedNamespaceMetadata:
       annotations:
-        fuzeinfra.io/owner-repo: izzywdev/FuzeInfra
+        fuzeinfra.io/owner-repo: FuzeOne/FuzeInfra
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

@@ -31,7 +31,7 @@ known value. There is no "look it up later".
 |---|---|---|
 | **Grafana** local admin (`admin`) | SealedSecret `fuzeinfra/grafana-admin`, key `GRAFANA_ADMIN_PASSWORD`. Chart default is the literal `admin`; the overlay points at this Secret via `grafana.adminPasswordSecret`. | Reseal + **bump `grafana.adminPasswordSecret.rotation`** in `values-contabo.yaml`. The bump is what rolls the pod — see §4. |
 | **ArgoCD** local admin | `argocd-initial-admin-secret` in ns `argocd`, created by ArgoCD itself. | `argocd account update-password`, or delete the secret and restart the server. |
-| **Authentik** `akadmin` | SealedSecret `fuzefront/fuzefront-secrets`, key `AUTHENTIK_BOOTSTRAP_PASSWORD` (izzywdev/FuzeFront). | Reseal that key, then roll the Authentik pods (§4). |
+| **Authentik** `akadmin` | SealedSecret `fuzefront/fuzefront-secrets`, key `AUTHENTIK_BOOTSTRAP_PASSWORD` (FuzeOne/FuzeFront). | Reseal that key, then roll the Authentik pods (§4). |
 | **Airflow** admin | SealedSecret `fuzeinfra/fuzeinfra-app-credentials`, key `AIRFLOW_ADMIN_PASSWORD`. | Reseal. **Only applies on a fresh metadata DB** — `airflow-init` runs `users create ... \|\| true`. For an existing user: `airflow users reset-password`. |
 | **RabbitMQ** admin | SealedSecret `fuzeinfra/fuzeinfra-app-credentials`, key `RABBITMQ_PASSWORD`. | Reseal. **Only applies on first boot against empty mnesia.** Otherwise `rabbitmqctl change_password`. |
 | Everything behind Cloudflare Access with no login of its own (Prometheus, Alertmanager, Mongo Express, ChromaDB) | n/a — Access **is** the auth layer | Change `allowed_admin_emails` in `terraform/contabo/variables.tf`. |

@@ -274,7 +274,7 @@ def test_logs_and_results_never_contain_tokens(tmp_path):
 
 
 def test_audit_issue_uses_only_validated_fields(tmp_path):
-    d, http = make_dispatcher(tmp_path, auditRepo="izzywdev/FuzeInfra")
+    d, http = make_dispatcher(tmp_path, auditRepo="FuzeOne/FuzeInfra")
     d.github_token = "fake-audit-token"
     d.handle_alert(alert(), T0)
     audit = [c for c in http.calls if urlparse(c[0]).hostname == "api.github.com"]

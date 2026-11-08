@@ -36,7 +36,7 @@ permissions:
   #
   # That is also why it shipped: checkout of a PUBLIC repo succeeds WITHOUT the
   # contents scope, so the omission stays invisible until a private repo adopts
-  # the template. Observed on izzywdev/FuzeExecutive (private), where every run
+  # the template. Observed on FuzeOne/FuzeExecutive (private), where every run
   # since install had failed this way. Fixed downstream in FuzeExecutive#28.
   contents: read  # actions/checkout
   issues: write   # labels are managed under the issues scope

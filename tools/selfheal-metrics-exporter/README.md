@@ -23,7 +23,7 @@ curl localhost:9109/metrics
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `GITHUB_REPO` | `izzywdev/FuzeInfra` | `owner/name` to query. |
+| `GITHUB_REPO` | `FuzeOne/FuzeInfra` | `owner/name` to query. |
 | `GITHUB_TOKEN` | *(empty)* | Optional. Empty = unauthenticated (60 req/h). Never logged. |
 | `POLL_INTERVAL_SECONDS` | `600` | Seconds between GitHub polls. |
 | `LISTEN_PORT` | `9109` | HTTP listen port. |
@@ -56,7 +56,7 @@ Each newly observed resolution prints one JSON line to stdout, which Promtail
 already ships to Loki:
 
 ```json
-{"event":"selfheal_resolved","system":"loki","issue_number":22,"url":"https://github.com/izzywdev/FuzeInfra/pull/22","title":"...","resolution_seconds":72104.0}
+{"event":"selfheal_resolved","system":"loki","issue_number":22,"url":"https://github.com/FuzeOne/FuzeInfra/pull/22","title":"...","resolution_seconds":72104.0}
 ```
 
 Query it with `{app="selfheal-metrics"} | json | event="selfheal_resolved"`.

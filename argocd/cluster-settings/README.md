@@ -58,5 +58,5 @@ whichever manager set it.
 
 The client secret comes from the `argocd-oidc` Secret in the `argocd` namespace;
 see `deploy/sealed-secrets/authentik-oidc-secrets.yaml.template`. The matching
-OIDC provider is defined as an Authentik blueprint in `izzywdev/FuzeFront`
+OIDC provider is defined as an Authentik blueprint in `FuzeOne/FuzeFront`
 (`deploy/helm/fuzefront/authentik/blueprints/provider-oidc-fuzeinfra-admin.yaml`).

@@ -51,7 +51,7 @@ jobs:
 
           jq -nc --arg args "$ARGS" \
             '{event_type:"cluster-query", client_payload:{kubectl_args:$args}}' \
-            | gh api --method POST repos/izzywdev/FuzeInfra/dispatches --input -
+            | gh api --method POST repos/FuzeOne/FuzeInfra/dispatches --input -
 
           echo "Dispatched: kubectl $ARGS"
 
@@ -67,7 +67,7 @@ jobs:
 
           # Poll for the run our dispatch created.
           for _ in $(seq 1 40); do
-            RUN=$(gh run list --repo izzywdev/FuzeInfra \
+            RUN=$(gh run list --repo FuzeOne/FuzeInfra \
                     --workflow=cluster-query.yml --event=repository_dispatch \
                     --limit 10 --json databaseId,createdAt,status,conclusion,url \
                   | jq -r --arg since "$SINCE" \
@@ -77,7 +77,7 @@ jobs:
           done
 
           if [ -z "${RUN:-}" ]; then
-            echo "::error::No cluster-query run appeared within ~10min. Check https://github.com/izzywdev/FuzeInfra/actions/workflows/cluster-query.yml"
+            echo "::error::No cluster-query run appeared within ~10min. Check https://github.com/FuzeOne/FuzeInfra/actions/workflows/cluster-query.yml"
             exit 1
           fi
 
@@ -85,7 +85,7 @@ jobs:
           echo "FuzeInfra run: $(jq -r .url <<<"$RUN")"
           echo '--- cluster output ------------------------------------------'
           # Print only the kubectl output, not the whole guard script echo.
-          gh run view "$ID" --repo izzywdev/FuzeInfra --log \
+          gh run view "$ID" --repo FuzeOne/FuzeInfra --log \
             | sed -n '/### kubectl/,$p' | head -c 100000
           echo
           echo '-------------------------------------------------------------'

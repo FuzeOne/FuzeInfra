@@ -83,7 +83,7 @@ Add the token to the **consumer** repo (e.g. FuzeFront) secrets as
 **`FUZEINFRA_DISPATCH_TOKEN`**:
 
 ```bash
-gh secret set FUZEINFRA_DISPATCH_TOKEN --repo izzywdev/FuzeFront
+gh secret set FUZEINFRA_DISPATCH_TOKEN --repo FuzeOne/FuzeFront
 ```
 
 > **Izzy:** create the token (Option A or B) and add it to FuzeFront's repo
@@ -126,7 +126,7 @@ jobs:
             echo "No non-empty 'requests' in deploy/terraform/requests.json — nothing to dispatch."
             exit 0
           fi
-          gh api repos/izzywdev/FuzeInfra/dispatches \
+          gh api repos/FuzeOne/FuzeInfra/dispatches \
             -f event_type=infra-request \
             -F client_payload[repo]="${{ github.repository }}" \
             -F client_payload[ref]="${{ github.sha }}" \
@@ -146,8 +146,8 @@ Registering a repo into the cluster's ArgoCD is a **one-time, manual** action,
 decoupled from the Terraform handler. Run FuzeInfra's `argocd-register.yml`:
 
 ```bash
-gh workflow run argocd-register.yml --repo izzywdev/FuzeInfra \
-  -f repo=izzywdev/FuzeFront -f ref=main -f path=deploy/argocd
+gh workflow run argocd-register.yml --repo FuzeOne/FuzeInfra \
+  -f repo=FuzeOne/FuzeFront -f ref=main -f path=deploy/argocd
 ```
 
 After this, ArgoCD polls and self-syncs the consumer's `deploy/argocd` manifests.

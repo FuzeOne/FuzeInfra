@@ -52,7 +52,7 @@
 # arc-register / deploy-prod.
 #
 # Example:
-#   gh workflow run arc-repair-drifted-scaleset.yml --repo izzywdev/FuzeInfra \
+#   gh workflow run arc-repair-drifted-scaleset.yml --repo FuzeOne/FuzeInfra \
 #     -f scale_sets="fuzepicker fuzesales" -f confirm=REPAIR
 
 name: arc-repair-drifted-scaleset

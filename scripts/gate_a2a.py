@@ -718,7 +718,7 @@ def main(argv=None):
     adoption_hard = (policy.get("skills") or {}).get("adoption", "fail") != "warn"
     # Case-insensitive on purpose. GitHub repo ids are case-INsensitive but
     # case-PRESERVING, so a policy naming `izzywdev/fuzebi` never matched a manifest
-    # declaring `izzywdev/FuzeBI` under exact-string membership -- the ratchet
+    # declaring `FuzeOne/FuzeBI` under exact-string membership -- the ratchet
     # silently did not apply and the repo stayed strict while its policy said
     # otherwise. Silent by construction: a ratchet that fails to soften looks
     # exactly like a repo that was never listed.

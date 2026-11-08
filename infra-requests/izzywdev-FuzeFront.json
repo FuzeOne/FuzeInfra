@@ -1,7 +1,7 @@
 {
   "changed": "deploy/terraform/node-requests.json",
   "ref": "87bc2db6ac4e34e08cc4f9a3873cb19a2c661e47",
-  "repo": "izzywdev/FuzeFront",
+  "repo": "FuzeOne/FuzeFront",
   "requests": [
     {
       "labels": {

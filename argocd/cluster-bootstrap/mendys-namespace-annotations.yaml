@@ -1,6 +1,6 @@
 # Set fuzeinfra.io/owner-repo on mendys namespaces so grafana-crit-fix.yml
 # routes error-log alerts to the owning repo (izzywdev/MendysRobotics) rather
-# than falling back to izzywdev/FuzeInfra (issue #250).
+# than falling back to FuzeOne/FuzeInfra (issue #250).
 #
 # Applied idempotently by apply-cluster-config.yml (kubectl apply) on push to
 # argocd/cluster-bootstrap/**. kubectl 3-way merge adds the annotation without

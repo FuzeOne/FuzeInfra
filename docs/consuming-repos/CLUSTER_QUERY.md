@@ -21,7 +21,7 @@ that *changes* the cluster stays GitOps or `@fuze`-delegated (see
 
 ## 1. Before you dispatch: the job log is PUBLIC
 
-`izzywdev/FuzeInfra` is a **public** repo (`class: oss-public`). Actions job logs on a
+`FuzeOne/FuzeInfra` is a **public** repo (`class: oss-public`). Actions job logs on a
 public repo are readable by **anyone on the internet**, and they are retained.
 
 Whatever you query is published. That is the single rule that governs how you use
@@ -42,7 +42,7 @@ this workflow:
 Split the two halves, because they have different answers:
 
 **Reading the result needs no credential at all.** FuzeInfra is a public repo, so its
-run metadata and job logs are world-readable — `GET /repos/izzywdev/FuzeInfra/actions/runs/<id>`
+run metadata and job logs are world-readable — `GET /repos/FuzeOne/FuzeInfra/actions/runs/<id>`
 answers `200` unauthenticated. Nothing needs an Actions grant to *read* an answer.
 
 **Triggering** needs a credential, and there are two events, so two ways in:
@@ -59,7 +59,7 @@ can already apply Terraform and create VPS nodes, so letting it run a guarded
 read-only `kubectl` reduces relative privilege rather than escalating it.
 
 ```bash
-gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
   -f event_type=cluster-query \
   -f 'client_payload[kubectl_args]=-n <my-namespace> get pods -o wide'
 ```
@@ -96,15 +96,15 @@ FuzeInfra asking for the read. That path always works; it is only slower.
 
 ```bash
 # 1. fire the query (repository_dispatch — FUZEINFRA_DISPATCH_TOKEN)
-gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
   -f event_type=cluster-query \
   -f 'client_payload[kubectl_args]=-n mendys-prod get pods -o wide'
 
 # 2. grab the run it created, wait for it, print the output
-RUN=$(gh run list --repo izzywdev/FuzeInfra --workflow=cluster-query.yml \
+RUN=$(gh run list --repo FuzeOne/FuzeInfra --workflow=cluster-query.yml \
         --event=repository_dispatch --limit 1 --json databaseId --jq '.[0].databaseId')
-gh run watch "$RUN" --repo izzywdev/FuzeInfra --exit-status
-gh run view  "$RUN" --repo izzywdev/FuzeInfra --log
+gh run watch "$RUN" --repo FuzeOne/FuzeInfra --exit-status
+gh run view  "$RUN" --repo FuzeOne/FuzeInfra --log
 ```
 
 > Neither dispatch event returns the run id, and the run takes a moment to appear — if
@@ -126,7 +126,7 @@ The workflow therefore also mirrors the kubectl output into **check-run annotati
 which come back from `api.github.com`:
 
 ```bash
-gh api "repos/izzywdev/FuzeInfra/actions/runs/$RUN/jobs" --jq '.jobs[].check_run_url' \
+gh api "repos/FuzeOne/FuzeInfra/actions/runs/$RUN/jobs" --jq '.jobs[].check_run_url' \
   | while read u; do gh api "${u#https://api.github.com/}/annotations" --jq '.[].message'; done
 ```
 
@@ -139,7 +139,7 @@ equivalent — same guard, same output — and both inputs are optional there, s
 dispatching with neither runs the `get nodes` default:
 
 ```bash
-gh workflow run cluster-query.yml --repo izzywdev/FuzeInfra \
+gh workflow run cluster-query.yml --repo FuzeOne/FuzeInfra \
   -f kubectl_args='-n mendys-prod get pods -o wide'
 ```
 
@@ -148,7 +148,7 @@ gh workflow run cluster-query.yml --repo izzywdev/FuzeInfra \
 Probe a public URL from inside the cluster's network path (`curl -sSIL`, headers only):
 
 ```bash
-gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
   -f event_type=cluster-query \
   -f 'client_payload[kubectl_args]=-n mendys-prod get ingress' \
   -f 'client_payload[curl_url]=https://www.mendysrobotics.com/'

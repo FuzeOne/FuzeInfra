@@ -28,7 +28,7 @@ one live example of the anti-pattern (`a2a-relay`).
 ## 2. Current state (verified 2026-09-22)
 
 Evidence: `cluster-query.yml` run
-[35775983154](https://github.com/izzywdev/FuzeInfra/actions/runs/35775983154),
+[35775983154](https://github.com/FuzeOne/FuzeInfra/actions/runs/35775983154),
 `get deploy -A`, plus the repo at `origin/main` `3e5c4d8`.
 
 ### 2.1 Ingress is a wildcard, not an allowlist

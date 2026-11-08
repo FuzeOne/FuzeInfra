@@ -81,7 +81,7 @@ jobs:
         run: |
           set -euo pipefail
           gh api --method POST \
-            repos/izzywdev/FuzeFront/actions/workflows/release.yml/dispatches \
+            repos/FuzeOne/FuzeFront/actions/workflows/release.yml/dispatches \
             -f ref=master \
             -f "inputs[reason]=FuzeInfra dispatcher: ${REASON}"
-          echo "Dispatched izzywdev/FuzeFront release.yml on master."
+          echo "Dispatched FuzeOne/FuzeFront release.yml on master."

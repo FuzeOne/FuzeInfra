@@ -54,7 +54,7 @@
 # NAMING-DRIFT AUDIT (2026-09-06, FuzeInfra issue tracking this file's naming
 # convention — see the fuzesdlc block below for the sibling finding):
 #
-# CONFIRMED: this set's githubConfigUrl is izzywdev/FuzeInfra, not a repo named
+# CONFIRMED: this set's githubConfigUrl is FuzeOne/FuzeInfra, not a repo named
 # "staging" — live-verified via cluster-query (`autoscalingrunnerset.actions.
 # github.com/staging`, 1 current runner, spec.githubConfigUrl=FuzeInfra) and the
 # listener pod `staging-<hash>-listener` in arc-systems. Every OTHER set in this
@@ -119,14 +119,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeInfra"
+            value: "https://github.com/FuzeOne/FuzeInfra"
           - name: runnerScaleSetName
             value: "staging"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -193,7 +193,7 @@ spec:
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -253,14 +253,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeHub"
+            value: "https://github.com/FuzeOne/FuzeHub"
           - name: runnerScaleSetName
             value: "fuzehub"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -320,14 +320,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeSales"
+            value: "https://github.com/FuzeOne/FuzeSales"
           - name: runnerScaleSetName
             value: "fuzesales"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -387,14 +387,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeSocial"
+            value: "https://github.com/FuzeOne/FuzeSocial"
           - name: runnerScaleSetName
             value: "fuzesocial"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -454,14 +454,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeContact"
+            value: "https://github.com/FuzeOne/FuzeContact"
           - name: runnerScaleSetName
             value: "fuzecontact"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -521,14 +521,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeService"
+            value: "https://github.com/FuzeOne/FuzeService"
           - name: runnerScaleSetName
             value: "fuzeservice"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -590,14 +590,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzePicker"
+            value: "https://github.com/FuzeOne/FuzePicker"
           - name: runnerScaleSetName
             value: "fuzepicker"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -657,14 +657,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeMarket"
+            value: "https://github.com/FuzeOne/FuzeMarket"
           - name: runnerScaleSetName
             value: "fuzemarket"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -703,7 +703,7 @@ spec:
 #
 # Uniform-runner convention (FuzeSDLC governance/ci-runners.md): the job-matching
 # key `runnerScaleSetName` is the family-wide constant `fuze-runner`, while the
-# Helm `releaseName` (fuzesdlc) and `githubConfigUrl` (izzywdev/FuzeSDLC) stay
+# Helm `releaseName` (fuzesdlc) and `githubConfigUrl` (FuzeOne/FuzeSDLC) stay
 # repo-scoped — on a personal account each set is repo-scoped, so many sets can
 # share the name `fuze-runner` without colliding. releaseName is left UNCHANGED so
 # this is an in-place rename of the existing set, not a second set (no orphan, no
@@ -725,7 +725,7 @@ spec:
 # `false` (see below), Argo never deleted it. Confirmed live via cluster-query:
 #   kubectl -n arc-runners get autoscalingrunnersets
 #     -> BOTH `fuzesdlc` and `fuze-runner` exist, both spec.githubConfigUrl
-#        https://github.com/izzywdev/FuzeSDLC, both phase: Running
+#        https://github.com/FuzeOne/FuzeSDLC, both phase: Running
 #   kubectl -n arc-systems get pods
 #     -> BOTH `fuzesdlc-<hash>-listener` and `fuze-runner-<hash>-listener` are
 #        1/1 Running right now — two live listeners polling GitHub for the same
@@ -764,14 +764,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeSDLC"
+            value: "https://github.com/FuzeOne/FuzeSDLC"
           - name: runnerScaleSetName
             value: "fuze-runner"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -828,14 +828,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeFront"
+            value: "https://github.com/FuzeOne/FuzeFront"
           - name: runnerScaleSetName
             value: "fuzefront"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -885,14 +885,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeAgent"
+            value: "https://github.com/FuzeOne/FuzeAgent"
           - name: runnerScaleSetName
             value: "fuzeagent"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -942,14 +942,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzePlan"
+            value: "https://github.com/FuzeOne/FuzePlan"
           - name: runnerScaleSetName
             value: "fuzeplan"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -999,14 +999,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeDeploy"
+            value: "https://github.com/FuzeOne/FuzeDeploy"
           - name: runnerScaleSetName
             value: "fuzedeploy"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1056,14 +1056,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeBI"
+            value: "https://github.com/FuzeOne/FuzeBI"
           - name: runnerScaleSetName
             value: "fuzebi"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1113,14 +1113,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeExecutive"
+            value: "https://github.com/FuzeOne/FuzeExecutive"
           - name: runnerScaleSetName
             value: "fuzeexecutive"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1170,14 +1170,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeFinance"
+            value: "https://github.com/FuzeOne/FuzeFinance"
           - name: runnerScaleSetName
             value: "fuzefinance"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1227,14 +1227,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeCall"
+            value: "https://github.com/FuzeOne/FuzeCall"
           - name: runnerScaleSetName
             value: "fuzecall"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1284,14 +1284,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeKeys"
+            value: "https://github.com/FuzeOne/FuzeKeys"
           - name: runnerScaleSetName
             value: "fuzekeys"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1341,14 +1341,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeX"
+            value: "https://github.com/FuzeOne/FuzeX"
           - name: runnerScaleSetName
             value: "fuzex"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1398,14 +1398,14 @@ spec:
           - $values/runners/arc/runner-scale-set-values.yaml
         parameters:
           - name: githubConfigUrl
-            value: "https://github.com/izzywdev/FuzeMerchandize"
+            value: "https://github.com/FuzeOne/FuzeMerchandize"
           - name: runnerScaleSetName
             value: "fuzemerchandize"
           - name: maxRunners
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1471,7 +1471,7 @@ spec:
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:
@@ -1547,7 +1547,7 @@ spec:
             value: "5"
           - name: minRunners
             value: "0"
-    - repoURL: https://github.com/izzywdev/FuzeInfra.git
+    - repoURL: https://github.com/FuzeOne/FuzeInfra.git
       targetRevision: main
       ref: values
   destination:

@@ -32,7 +32,7 @@ Two possible decisions:
 
 Usage:
     validate_arc_register.py --allowlist config/arc-register-allowlist.json \
-        --repo izzywdev/FuzeHub --action install [--github-output "$GITHUB_OUTPUT"]
+        --repo FuzeOne/FuzeHub --action install [--github-output "$GITHUB_OUTPUT"]
 
 Exit code is always 0 (the decision is conveyed via output, not process
 failure) so the calling workflow step can branch on `decision` rather than

@@ -36,17 +36,17 @@ But most "is it up / what does it say" questions don't need a channel — `descr
 
 ```bash
 # pod health
-gh workflow run cluster-query.yml --repo izzywdev/FuzeInfra \
+gh workflow run cluster-query.yml --repo FuzeOne/FuzeInfra \
   -f kubectl_args='-n fuzeinfra get pods -l app=elasticsearch -o wide'
-gh workflow run cluster-query.yml --repo izzywdev/FuzeInfra \
+gh workflow run cluster-query.yml --repo FuzeOne/FuzeInfra \
   -f kubectl_args='-n fuzeinfra get pods -l app=chromadb -o wide'
 
 # recent logs
-gh workflow run cluster-query.yml --repo izzywdev/FuzeInfra \
+gh workflow run cluster-query.yml --repo FuzeOne/FuzeInfra \
   -f kubectl_args='-n fuzeinfra logs -l app=elasticsearch --tail=200'
 
 # is the Service/endpoints healthy
-gh workflow run cluster-query.yml --repo izzywdev/FuzeInfra \
+gh workflow run cluster-query.yml --repo FuzeOne/FuzeInfra \
   -f kubectl_args='-n fuzeinfra get svc,endpoints fuzeinfra-elasticsearch fuzeinfra-chromadb'
 ```
 

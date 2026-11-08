@@ -38,4 +38,4 @@ jobs:
           git add governance/object-storage-allocations.json governance/credential-handoff.json
           git commit -m "feat(storage): enable ${allocation} allocation"
           git push origin "provision/object-storage-${allocation}"
-          gh pr create --repo izzywdev/FuzeInfra --base main --head "provision/object-storage-${allocation}" --title "feat(storage): enable ${allocation} allocation" --body 'Generated from a schema-validated object-storage request. It enables only a predeclared private allocation and sealed credential handoff; provider credentials are never generated, logged, or committed.'
+          gh pr create --repo FuzeOne/FuzeInfra --base main --head "provision/object-storage-${allocation}" --title "feat(storage): enable ${allocation} allocation" --body 'Generated from a schema-validated object-storage request. It enables only a predeclared private allocation and sealed credential handoff; provider credentials are never generated, logged, or committed.'

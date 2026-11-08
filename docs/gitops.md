@@ -56,10 +56,10 @@ make argocd-install ENV=aws                          # bootstraps fuzeinfra-aws
 
 ## Private repository
 
-If `izzywdev/FuzeInfra` is private, Argo CD needs read credentials:
+If `FuzeOne/FuzeInfra` is private, Argo CD needs read credentials:
 
 ```bash
-argocd repo add https://github.com/izzywdev/FuzeInfra.git \
+argocd repo add https://github.com/FuzeOne/FuzeInfra.git \
   --username <user> --password <personal-access-token>
 ```
 
@@ -109,7 +109,7 @@ Then **Settings → General → Pull Requests → Allow auto-merge** (already en
 ## Option B — `gh` CLI (exact config)
 
 ```bash
-gh api -X PUT repos/izzywdev/FuzeInfra/branches/main/protection \
+gh api -X PUT repos/FuzeOne/FuzeInfra/branches/main/protection \
   -H "Accept: application/vnd.github+json" \
   --input - <<'JSON'
 {

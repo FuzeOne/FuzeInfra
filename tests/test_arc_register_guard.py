@@ -39,8 +39,8 @@ def allowlist_path(tmp_path):
     7th repo."""
     data = {
         "allowed_repos": {
-            "izzywdev/FuzeHub": {"scale_set_name": "fuzehub"},
-            "izzywdev/FuzeSales": {"scale_set_name": "fuzesales"},
+            "FuzeOne/FuzeHub": {"scale_set_name": "fuzehub"},
+            "FuzeOne/FuzeSales": {"scale_set_name": "fuzesales"},
         },
         "allowed_actions": ["install", "uninstall"],
     }
@@ -78,15 +78,15 @@ def run_validator(allowlist_path, repo, action="install", github_output=None):
 # --- allowlisted repos are authorized, and the target is DERIVED -----------
 
 def test_allowlisted_repo_is_authorized(allowlist_path):
-    out = run_validator(allowlist_path, "izzywdev/FuzeHub", "install")
+    out = run_validator(allowlist_path, "FuzeOne/FuzeHub", "install")
     assert out["decision"] == "authorized"
-    assert out["repo"] == "izzywdev/FuzeHub"
-    assert out["repo_url"] == "https://github.com/izzywdev/FuzeHub"
+    assert out["repo"] == "FuzeOne/FuzeHub"
+    assert out["repo_url"] == "https://github.com/FuzeOne/FuzeHub"
     assert out["scale_set_name"] == "fuzehub"
 
 
 def test_second_allowlisted_repo_gets_its_own_scale_set_name(allowlist_path):
-    out = run_validator(allowlist_path, "izzywdev/FuzeSales", "uninstall")
+    out = run_validator(allowlist_path, "FuzeOne/FuzeSales", "uninstall")
     assert out["decision"] == "authorized"
     assert out["scale_set_name"] == "fuzesales"
     assert out["action"] == "uninstall"
@@ -98,11 +98,11 @@ def test_second_allowlisted_repo_gets_its_own_scale_set_name(allowlist_path):
     "claimed_repo",
     [
         "izzywdev/NotOnboarded",
-        "izzywdev/FuzeHub ",  # trailing space — must not fuzzy-match
+        "FuzeOne/FuzeHub ",  # trailing space — must not fuzzy-match
         "IZZYWDEV/FUZEHUB",  # case must not fuzzy-match
         "",
         "../../etc/passwd",
-        "izzywdev/FuzeHub; rm -rf /",
+        "FuzeOne/FuzeHub; rm -rf /",
     ],
 )
 def test_unlisted_repo_claims_are_denied(allowlist_path, claimed_repo):
@@ -125,7 +125,7 @@ def test_denied_decision_explains_why(allowlist_path):
 
 @pytest.mark.parametrize("bad_action", ["delete", "patch", "INSTALL", "install "])
 def test_unrecognized_action_is_denied(allowlist_path, bad_action):
-    out = run_validator(allowlist_path, "izzywdev/FuzeHub", bad_action)
+    out = run_validator(allowlist_path, "FuzeOne/FuzeHub", bad_action)
     assert out["decision"] == "denied"
 
 
@@ -133,7 +133,7 @@ def test_default_action_is_install_when_blank(allowlist_path):
     # The workflow feeds '' when neither client_payload.action nor
     # inputs.action is set; the validator must default sanely rather than deny
     # a well-formed install-only dispatch.
-    out = run_validator(allowlist_path, "izzywdev/FuzeHub", action="")
+    out = run_validator(allowlist_path, "FuzeOne/FuzeHub", action="")
     assert out["decision"] == "authorized"
     assert out["action"] == "install"
 
@@ -143,7 +143,7 @@ def test_default_action_is_install_when_blank(allowlist_path):
 def test_writes_github_output_file(allowlist_path, tmp_path):
     gh_out = tmp_path / "github_output.txt"
     gh_out.write_text("", encoding="utf-8")
-    run_validator(allowlist_path, "izzywdev/FuzeHub", "install", github_output=gh_out)
+    run_validator(allowlist_path, "FuzeOne/FuzeHub", "install", github_output=gh_out)
     content = gh_out.read_text(encoding="utf-8")
     assert "decision=authorized" in content
     assert "scale_set_name=fuzehub" in content
@@ -156,11 +156,11 @@ def test_real_allowlist_is_valid_json_with_expected_repos():
     data = json.loads(REAL_ALLOWLIST.read_text(encoding="utf-8"))
     allowed = data["allowed_repos"]
     expected = {
-        "izzywdev/FuzeContact",
-        "izzywdev/FuzeHub",
-        "izzywdev/FuzeSales",
-        "izzywdev/FuzeService",
-        "izzywdev/FuzeSocial",
+        "FuzeOne/FuzeContact",
+        "FuzeOne/FuzeHub",
+        "FuzeOne/FuzeSales",
+        "FuzeOne/FuzeService",
+        "FuzeOne/FuzeSocial",
         "izzywdev/MendysRobotics",
     }
     assert expected.issubset(allowed.keys()), (

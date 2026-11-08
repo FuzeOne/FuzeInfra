@@ -5,7 +5,7 @@
 #     writes repo secrets. It is intentionally NOT run by automation.
 #
 # Trust model (min-privilege, max-decoupling): a SINGLE read-only deploy key grants read to
-# izzywdev/FuzeSDLC ONLY. Its private half is distributed as the `FUZESDLC_DEPLOY_KEY` secret
+# FuzeOne/FuzeSDLC ONLY. Its private half is distributed as the `FUZESDLC_DEPLOY_KEY` secret
 # to each consuming repo, whose governance-sync.yml uses it to fetch the FuzeSDLC canonical.
 # No repo ever gets write to another; each repo reconciles with its OWN GITHUB_TOKEN + this
 # shared read key. FuzeSDLC never needs write to any consumer (no fan-out, no hub-held key
@@ -24,16 +24,16 @@
 # Idempotent: an existing key is reused (never silently rotated); an already-set secret is
 # reported and skipped unless --force.
 #
-# Prereqs: `gh` authenticated as an owner/admin of izzywdev/FuzeSDLC and the targets;
+# Prereqs: `gh` authenticated as an owner/admin of FuzeOne/FuzeSDLC and the targets;
 # `ssh-keygen` available.
 #
 # Usage:
 #   scripts/setup-fuzesdlc-deploy-key.sh                 # auto-discover + provision + verify
 #   scripts/setup-fuzesdlc-deploy-key.sh --dry-run       # show what it WOULD do, touch nothing
-#   scripts/setup-fuzesdlc-deploy-key.sh izzywdev/FuzeX  # restrict to explicit repos
+#   scripts/setup-fuzesdlc-deploy-key.sh FuzeOne/FuzeX  # restrict to explicit repos
 set -uo pipefail
 
-OWNER=izzywdev
+OWNER=FuzeOne
 SDLC_REPO="$OWNER/FuzeSDLC"
 KEY_TITLE="governance-sync-ro"
 DRY=0

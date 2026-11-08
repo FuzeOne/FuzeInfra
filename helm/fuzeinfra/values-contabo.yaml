@@ -292,7 +292,7 @@ kafkaUi:
     # Off again. It did its job: with Spring Security at DEBUG the pod log named
     # the actual failure — "[invalid_id_token] Unsupported algorithm of HS256" —
     # which is what identified the missing signing_key on the Authentik providers
-    # (izzywdev/FuzeFront#762). Four prior hypotheses had not found it.
+    # (FuzeOne/FuzeFront#762). Four prior hypotheses had not found it.
     #
     # Turn it back on the same way if another OAuth2 failure needs diagnosing.
     # Read the TRACE warning in templates/messaging.yaml first.
@@ -937,7 +937,7 @@ clusterAutoscaler:
     # and the diff shows exactly which build is going to prod. Pinned to the
     # image built from commit 6d36880 (last successful
     # ca-provider-image.yml run on main as of 2026-09-22:
-    # https://github.com/izzywdev/FuzeInfra/actions/runs/35035333001).
+    # https://github.com/FuzeOne/FuzeInfra/actions/runs/35035333001).
     image: ghcr.io/izzywdev/fuzeinfra-contabo-ca-provider:sha-6d36880
     existingSecret: fuzeinfra-ca-provider
     # Current Contabo create-instance catalog: Cloud VPS 4 (4 vCPU / 8 GiB).

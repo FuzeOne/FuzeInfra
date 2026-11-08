@@ -12,7 +12,7 @@ destination — so a project that may create ClusterRoleBindings may bind itself
 therefore provisioned here, reviewed in this repo.
 
 The FuzeFront security service authenticates workloads in two steps
-(backend/security/src/services/workload-identity.ts in izzywdev/FuzeFront):
+(backend/security/src/services/workload-identity.ts in FuzeOne/FuzeFront):
 
   1. POST /apis/authentication.k8s.io/v1/tokenreviews — TokenReview is a
      cluster-scoped API, so this needs a ClusterRole + ClusterRoleBinding.

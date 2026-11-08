@@ -9,7 +9,7 @@
 #   "unknown shorthand flag: 'f' in -f"
 # (docker treats `compose` as an unknown top-level flag).  DinD (containerMode:
 # dind) provides the *daemon* via a sidecar but does not add these client
-# plugins — they must live in the runner image.  See izzywdev/FuzeInfra #223,
+# plugins — they must live in the runner image.  See FuzeOne/FuzeInfra #223,
 # #230, #231, #233, #235.
 #
 # This image also pre-warms /opt/hostedtoolcache with Python 3.10/3.11/3.12 and

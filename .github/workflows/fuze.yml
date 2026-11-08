@@ -6,7 +6,7 @@ name: Fuze
 # `@fuze` on an issue, an issue comment, a PR review or a review comment.
 #
 # WHY THIS EXISTS AS A CANONICAL TEMPLATE AT ALL. `@fuze` was a real, working entrypoint in
-# exactly ONE repo (izzywdev/FuzeInfra) and in no other, so `@fuze` in any other repo was a
+# exactly ONE repo (FuzeOne/FuzeInfra) and in no other, so `@fuze` in any other repo was a
 # mention nothing answered. Community issue templates already seed `@fuze — please triage.`
 # (community-templates/.github/ISSUE_TEMPLATE/*.md), and the baseline documents `@fuze` as
 # the delegation handle, so 21 of 22 repos were pointed at a handler they did not have.
@@ -534,7 +534,7 @@ jobs:
       # missing credential — as `availability`, the SAME class as a real credit/quota outage.
       # The old text asserted "check LITELLM_FUZE_KEY and ANTHROPIC_API_KEY" on EVERY
       # availability failure, sending readers to vendor billing for what was in fact a
-      # token/permission problem (izzywdev/FuzeSDLC#456: both Anthropic rungs died at the
+      # token/permission problem (FuzeOne/FuzeSDLC#456: both Anthropic rungs died at the
       # permission precheck, never reached a model call, yet the notice blamed the LLM keys).
       # So: key off the `availability` output, name the ACTUAL candidate causes in priority
       # order, point at the per-rung step logs that carry the exact error, and ALWAYS state

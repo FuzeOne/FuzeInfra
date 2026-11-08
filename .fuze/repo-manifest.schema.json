@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/izzywdev/FuzeSDLC/governance/repo-manifest.schema.json",
+  "$id": "https://github.com/FuzeOne/FuzeSDLC/governance/repo-manifest.schema.json",
   "title": "Fuze repo manifest",
   "description": "Declares which canonical FuzeSDLC agents/skills a repo instantiates and its hardening settings. Lives at .fuze/manifest.json in each consuming repo; sdlc-bootstrap reads it.",
   "type": "object",
@@ -15,7 +15,7 @@
   "properties": {
     "repo": {
       "type": "string",
-      "description": "owner/name, e.g. izzywdev/FuzeFront"
+      "description": "owner/name, e.g. FuzeOne/FuzeFront"
     },
     "class": {
       "enum": [
@@ -40,7 +40,7 @@
     "baselineRef": {
       "type": "string",
       "default": "v1",
-      "description": "FuzeSDLC ref this repo pins its baseline/agents/skills to; governance-sync reconciles against it. Use the moving major tag 'v1' — re-pointed on every compatible policy update, so propagation stays automatic while breaking changes land as 'v2' and are opted into per repo. Pin an immutable 'v1.x.y' only to deliberately freeze a repo. ENFORCED (see allOf below), not merely described: for every repo EXCEPT the hub itself, this must be a major alias (v1), an immutable release (v1.11.0), or a full 40-char SHA — 'main' and other branch names are rejected. Until 2026-09-02 the rule lived only in this sentence and nothing validated it, so six repos sat on 'main' and nothing was ever red. izzywdev/FuzeSDLC is exempt because it IS the baseline: a hub cannot pin to a tag of itself. A bare SHA is allowed but is almost never wanted: it silently un-pins the repo from the moving alias, so it stops receiving policy updates forever with no signal. FuzeDeploy and FuzeExecutive were both frozen that way by a bootstrap re-stamp that overwrote 'v1' with FuzeSDLC's then-current main SHA — neither freeze was intentional. See governance/versioning.md."
+      "description": "FuzeSDLC ref this repo pins its baseline/agents/skills to; governance-sync reconciles against it. Use the moving major tag 'v1' — re-pointed on every compatible policy update, so propagation stays automatic while breaking changes land as 'v2' and are opted into per repo. Pin an immutable 'v1.x.y' only to deliberately freeze a repo. ENFORCED (see allOf below), not merely described: for every repo EXCEPT the hub itself, this must be a major alias (v1), an immutable release (v1.11.0), or a full 40-char SHA — 'main' and other branch names are rejected. Until 2026-09-02 the rule lived only in this sentence and nothing validated it, so six repos sat on 'main' and nothing was ever red. FuzeOne/FuzeSDLC is exempt because it IS the baseline: a hub cannot pin to a tag of itself. A bare SHA is allowed but is almost never wanted: it silently un-pins the repo from the moving alias, so it stops receiving policy updates forever with no signal. FuzeDeploy and FuzeExecutive were both frozen that way by a bootstrap re-stamp that overwrote 'v1' with FuzeSDLC's then-current main SHA — neither freeze was intentional. See governance/versioning.md."
     },
     "agents": {
       "type": "array",
@@ -678,7 +678,7 @@
     "clusterOps": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Declares that this repo's `@fuze` entrypoint is CLUSTER-CAPABLE — that it may hold prod cluster credentials and run kubectl/helm/terraform. This is the gate scripts/bootstrap/caps/workflows.py reads before installing `workflow-templates/fuze-cluster.yml`; with the block absent, or `enabled` anything other than literal true, that template is not planned for the repo and neither `secrets.KUBE_CONFIG`, nor terraform, nor the in-cluster runner label appears in any file the installer writes. EXACTLY ONE REPO MAY DECLARE THIS: izzywdev/FuzeInfra, which owns the cluster. CLAUDE.baseline.md 1 forbids a consuming repo from operating the cluster at all, so a product repo carrying this block is declaring a policy violation, not enabling a feature — treat it as a governance finding. THE FLAG IS HALF THE GATE. It decides whether the privileged workflow FILE exists; `vars.FUZE_CLUSTER_ENTRYPOINT == 'true'`, set by a human in the repo's own settings, decides whether it RUNS. Neither the installer nor governance-sync can set a repo variable, so no automated propagation path can switch on prod cluster access by itself.",
+      "description": "Declares that this repo's `@fuze` entrypoint is CLUSTER-CAPABLE — that it may hold prod cluster credentials and run kubectl/helm/terraform. This is the gate scripts/bootstrap/caps/workflows.py reads before installing `workflow-templates/fuze-cluster.yml`; with the block absent, or `enabled` anything other than literal true, that template is not planned for the repo and neither `secrets.KUBE_CONFIG`, nor terraform, nor the in-cluster runner label appears in any file the installer writes. EXACTLY ONE REPO MAY DECLARE THIS: FuzeOne/FuzeInfra, which owns the cluster. CLAUDE.baseline.md 1 forbids a consuming repo from operating the cluster at all, so a product repo carrying this block is declaring a policy violation, not enabling a feature — treat it as a governance finding. THE FLAG IS HALF THE GATE. It decides whether the privileged workflow FILE exists; `vars.FUZE_CLUSTER_ENTRYPOINT == 'true'`, set by a human in the repo's own settings, decides whether it RUNS. Neither the installer nor governance-sync can set a repo variable, so no automated propagation path can switch on prod cluster access by itself.",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -731,7 +731,7 @@
       "if": {
         "properties": {
           "repo": {
-            "const": "izzywdev/FuzeSDLC"
+            "const": "FuzeOne/FuzeSDLC"
           }
         },
         "required": [

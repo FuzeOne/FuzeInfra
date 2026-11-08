@@ -24,7 +24,7 @@ with FuzeInfra's credentials.
 
 ```hcl
 module "nodes" {
-  source = "git::https://github.com/izzywdev/FuzeInfra.git//modules/contabo-k3s-node?ref=main"
+  source = "git::https://github.com/FuzeOne/FuzeInfra.git//modules/contabo-k3s-node?ref=main"
 
   # Declared by the consumer — the "what":
   requests = [

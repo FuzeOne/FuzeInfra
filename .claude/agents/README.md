@@ -7,7 +7,7 @@ feature-agent once reported "DONE/GREEN" while siblings (UI/tests) were unbuilt.
 Scoped agents that report an honest, scoped "done" are the guardrail.
 
 > Boundary = **domain, not repo**. Agents *enforce scope*; skills are *procedure*.
-> This set mirrors `izzywdev/FuzeFront`'s domain-agent set, adapted for FuzeInfra.
+> This set mirrors `FuzeOne/FuzeFront`'s domain-agent set, adapted for FuzeInfra.
 
 ## The roles
 

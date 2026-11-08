@@ -55,7 +55,7 @@ image the runners use). **Do not touch these.**
 | `actionlint.yml` | 27 | optional | pure YAML lint |
 
 > `claude-ci-autofix.yml` is a **reusable-workflow caller**
-> (`uses: izzywdev/FuzeSDLC/.github/workflows/reusable-claude-ci-autofix.yml@main`). It has
+> (`uses: FuzeOne/FuzeSDLC/.github/workflows/reusable-claude-ci-autofix.yml@main`). It has
 > no `runs-on` of its own — the runner is now chosen **here**, by passing a `runner:` input
 > to the reusable workflow. (This previously said the `runs-on` lived in the AITools repo
 > and had to be migrated there. AITools has been retired into FuzeSDLC, and hard-coding the

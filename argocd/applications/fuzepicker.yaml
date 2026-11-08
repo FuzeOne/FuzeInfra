@@ -18,7 +18,7 @@ metadata:
 spec:
   project: fuzepicker
   source:
-    repoURL: https://github.com/izzywdev/FuzePicker.git
+    repoURL: https://github.com/FuzeOne/FuzePicker.git
     targetRevision: master
     path: deploy/argocd/applications
     directory:

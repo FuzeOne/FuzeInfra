@@ -8,7 +8,7 @@
 #
 # GOVERNANCE RULE: FuzeInfra owns AppProjects (the destination/security boundary);
 # consumers only create Applications WITHIN their assigned, restricted project.
-# FuzePlan's Argo Application (in izzywdev/FuzePlan deploy/argocd/) must set
+# FuzePlan's Argo Application (in FuzeOne/FuzePlan deploy/argocd/) must set
 # `spec.project: fuzeplan` and target only the `fuzeplan` namespace. Consumers
 # consume FuzeInfra services via in-cluster service DNS (cross-namespace
 # networking) — that needs NO Argo destination into `fuzeinfra`.
@@ -20,7 +20,7 @@ metadata:
 spec:
   description: FuzePlan product (consumer of FuzeInfra) — may deploy ONLY into its own namespace.
   sourceRepos:
-    - https://github.com/izzywdev/FuzePlan.git
+    - https://github.com/FuzeOne/FuzePlan.git
   destinations:
     # The product's workloads.
     - namespace: fuzeplan

@@ -15,7 +15,7 @@ classify.sh then sees an empty conclusion with the runner step reporting
 execution log — returns exit 3 = "declined". So EVERY successful headless review
 (both the subscription-OAuth rung 1a and the metered rung 1) was classified as a
 decline, `mode=declined` / `conclusion=neutral` / "NO WORK WAS PERFORMED", and
-fuze-code-review could never approve or comment. Verified on izzywdev/FuzeSDLC
+fuze-code-review could never approve or comment. Verified on FuzeOne/FuzeSDLC
 PR #327 run 34395249476: OAUTH_CODE=3, step outcome=success, empty conclusion,
 empty sensitive-files, no availability signature.
 

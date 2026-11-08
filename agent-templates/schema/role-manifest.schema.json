@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/izzywdev/FuzeSDLC/agent-templates/role-manifest.schema.json",
+  "$id": "https://github.com/FuzeOne/FuzeSDLC/agent-templates/role-manifest.schema.json",
   "title": "Managed-Agents role manifest",
   "description": "One engineer-role definition. Projected into a POST /v1/agents payload by sync/sync_agents.py. The persona .md body becomes the agent's `system`; `environment` binds a POST /v1/environments resource by name.",
   "type": "object",

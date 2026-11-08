@@ -14,16 +14,16 @@
 # =============================================================================
 
 public_app_hosts = {
-  # izzywdev/FuzeKeys (FuzeInfra#136 / #140)
-  "keys"     = "izzywdev/FuzeKeys" # frontend    — keys.prod.fuzefront.com
-  "api.keys" = "izzywdev/FuzeKeys" # API backend — api.keys.prod.fuzefront.com
+  # FuzeOne/FuzeKeys (FuzeInfra#136 / #140)
+  "keys"     = "FuzeOne/FuzeKeys" # frontend    — keys.prod.fuzefront.com
+  "api.keys" = "FuzeOne/FuzeKeys" # API backend — api.keys.prod.fuzefront.com
 
   # MFE product apps — registered as FuzeFront micro-frontends
-  "fuzesales"   = "izzywdev/FuzeSales"   # fuzesales.prod.fuzefront.com
-  "fuzecontact" = "izzywdev/FuzeContact" # fuzecontact.prod.fuzefront.com
-  "fuzeservice" = "izzywdev/FuzeService" # fuzeservice.prod.fuzefront.com
+  "fuzesales"   = "FuzeOne/FuzeSales"   # fuzesales.prod.fuzefront.com
+  "fuzecontact" = "FuzeOne/FuzeContact" # fuzecontact.prod.fuzefront.com
+  "fuzeservice" = "FuzeOne/FuzeService" # fuzeservice.prod.fuzefront.com
 
-  # izzywdev/FuzePicker (FuzeInfra#242)
-  "api.fuzepicker" = "izzywdev/FuzePicker" # backend API (own JWT auth) — api.fuzepicker.prod.fuzefront.com
-  "picker"         = "izzywdev/FuzePicker" # static module-federation bundle — picker.prod.fuzefront.com
+  # FuzeOne/FuzePicker (FuzeInfra#242)
+  "api.fuzepicker" = "FuzeOne/FuzePicker" # backend API (own JWT auth) — api.fuzepicker.prod.fuzefront.com
+  "picker"         = "FuzeOne/FuzePicker" # static module-federation bundle — picker.prod.fuzefront.com
 }
