@@ -10,7 +10,7 @@ metadata:
 spec:
   project: fuzeagent
   source:
-    repoURL: https://github.com/izzywdev/FuzeAgent.git
+    repoURL: https://github.com/FuzeOne/FuzeAgent.git
     targetRevision: main
     path: deploy/argocd/applications
     directory:

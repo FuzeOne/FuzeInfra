@@ -1,6 +1,6 @@
 # agent-templates — Managed-Agents role packs for a self-dispatching SDLC
 
-> ⚠️ **This feature belongs in [FuzeAgent](https://github.com/izzywdev/FuzeAgent), not FuzeInfra.**
+> ⚠️ **This feature belongs in [FuzeAgent](https://github.com/FuzeOne/FuzeAgent), not FuzeInfra.**
 > It was prototyped here (richest cluster-capable example) but is application-level agent
 > orchestration, not shared infra. Port it to FuzeAgent — see
 > [PORTING-TO-FUZEAGENT.md](PORTING-TO-FUZEAGENT.md). The generic role/environment/permission

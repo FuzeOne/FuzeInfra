@@ -46,8 +46,8 @@ def runner(name, status):
 @pytest.mark.parametrize(
     "url,expected",
     [
-        ("https://github.com/izzywdev/FuzePlan", "izzywdev/FuzePlan"),
-        ("https://github.com/izzywdev/FuzePlan/", "izzywdev/FuzePlan"),
+        ("https://github.com/FuzeOne/FuzePlan", "FuzeOne/FuzePlan"),
+        ("https://github.com/FuzeOne/FuzePlan/", "FuzeOne/FuzePlan"),
         ("https://github.com/izzywdev", None),  # org-level: no repo to query
         ("", None),
         (None, None),
@@ -61,15 +61,15 @@ def test_repo_from_config_url(url, expected):
 def test_scale_set_mapping_comes_from_the_cluster_not_a_hardcoded_list():
     payload = {
         "items": [
-            {"metadata": {"name": "fuzeplan"}, "spec": {"githubConfigUrl": "https://github.com/izzywdev/FuzePlan"}},
-            {"metadata": {"name": "staging"}, "spec": {"githubConfigUrl": "https://github.com/izzywdev/FuzeInfra"}},
+            {"metadata": {"name": "fuzeplan"}, "spec": {"githubConfigUrl": "https://github.com/FuzeOne/FuzePlan"}},
+            {"metadata": {"name": "staging"}, "spec": {"githubConfigUrl": "https://github.com/FuzeOne/FuzeInfra"}},
             # Unparseable config URL must be DROPPED, not guessed at.
             {"metadata": {"name": "broken"}, "spec": {"githubConfigUrl": "https://example.invalid"}},
         ]
     }
     assert rh.parse_scale_sets(payload) == {
-        "fuzeplan": "izzywdev/FuzePlan",
-        "staging": "izzywdev/FuzeInfra",
+        "fuzeplan": "FuzeOne/FuzePlan",
+        "staging": "FuzeOne/FuzeInfra",
     }
 
 
@@ -94,7 +94,7 @@ def test_scale_set_prefix_does_not_swallow_a_longer_sibling():
 
 def test_running_pods_with_zero_online_runners_is_critical():
     """The #1187 signature: capacity that exists, looks healthy, and serves nothing."""
-    scale_sets = {"fuzeplan": "izzywdev/FuzePlan"}
+    scale_sets = {"fuzeplan": "FuzeOne/FuzePlan"}
     pods = rh.parse_runner_pods(
         {"items": [
             pod("fuzeplan-bhn6d-runner-976qb", "fuzeinfra-ci-runner-1"),
@@ -102,7 +102,7 @@ def test_running_pods_with_zero_online_runners_is_critical():
         ]},
         NOW,
     )
-    runners = {"izzywdev/FuzePlan": {"runners": [
+    runners = {"FuzeOne/FuzePlan": {"runners": [
         runner("fuzeplan-bhn6d-runner-976qb", "offline"),
         runner("fuzeplan-bhn6d-runner-jqcjk", "offline"),
     ]}}
@@ -116,25 +116,25 @@ def test_running_pods_with_zero_online_runners_is_critical():
 
 def test_freshly_created_pods_do_not_cry_wolf():
     """A pod seconds old has not failed to register; it has not tried yet."""
-    scale_sets = {"fuzeplan": "izzywdev/FuzePlan"}
+    scale_sets = {"fuzeplan": "FuzeOne/FuzePlan"}
     pods = rh.parse_runner_pods(
         {"items": [pod("fuzeplan-bhn6d-runner-976qb", "n1", minutes_old=0)]}, NOW
     )
-    runners = {"izzywdev/FuzePlan": {"runners": []}}
+    runners = {"FuzeOne/FuzePlan": {"runners": []}}
     assert rh.evaluate(scale_sets, pods, runners) == []
 
 
 def test_idle_scale_set_with_no_pods_is_not_a_finding():
     """Zero runners is the normal resting state of an ephemeral scale set."""
-    assert rh.evaluate({"fuzebi": "izzywdev/FuzeBI"}, [], {"izzywdev/FuzeBI": {"runners": []}}) == []
+    assert rh.evaluate({"fuzebi": "FuzeOne/FuzeBI"}, [], {"FuzeOne/FuzeBI": {"runners": []}}) == []
 
 
 def test_healthy_set_is_silent():
-    scale_sets = {"fuzefinance": "izzywdev/FuzeFinance"}
+    scale_sets = {"fuzefinance": "FuzeOne/FuzeFinance"}
     pods = rh.parse_runner_pods(
         {"items": [pod("fuzefinance-rmqs9-runner-f5dwf", "elastic-1")]}, NOW
     )
-    runners = {"izzywdev/FuzeFinance": {"runners": [
+    runners = {"FuzeOne/FuzeFinance": {"runners": [
         runner("fuzefinance-rmqs9-runner-f5dwf", "online")
     ]}}
     assert rh.evaluate(scale_sets, pods, runners) == []
@@ -179,7 +179,7 @@ def test_stranded_count_matches_the_nodes_printed_beside_it():
     which is exactly the kind of internal contradiction that makes an operator stop
     trusting a monitor.
     """
-    scale_sets = {"fuzefront": "izzywdev/FuzeFront"}
+    scale_sets = {"fuzefront": "FuzeOne/FuzeFront"}
     pods = rh.parse_runner_pods(
         {"items": [
             pod("fuzefront-abc-runner-1", "fuzeinfra-ci-runner-1"),
@@ -189,7 +189,7 @@ def test_stranded_count_matches_the_nodes_printed_beside_it():
         ]},
         NOW,
     )
-    runners = {"izzywdev/FuzeFront": {"runners": [
+    runners = {"FuzeOne/FuzeFront": {"runners": [
         runner("fuzefront-abc-runner-3", "online"),
         runner("fuzefront-abc-runner-1", "offline"),
         runner("fuzefront-abc-runner-2", "offline"),
@@ -292,10 +292,10 @@ def test_probe_runs_on_a_schedule():
 def test_empty_pool_with_queued_work_is_critical():
     """The outage the old check could not see."""
     findings = rh.evaluate(
-        {"staging": "izzywdev/FuzeInfra"},
+        {"staging": "FuzeOne/FuzeInfra"},
         [],
-        {"izzywdev/FuzeInfra": {"runners": []}},
-        queued_by_repo={"izzywdev/FuzeInfra": ["Helm Chart Validation", "deploy-prod"]},
+        {"FuzeOne/FuzeInfra": {"runners": []}},
+        queued_by_repo={"FuzeOne/FuzeInfra": ["Helm Chart Validation", "deploy-prod"]},
     )
     assert len(findings) == 1
     assert findings[0].level == rh.CRITICAL
@@ -309,10 +309,10 @@ def test_empty_pool_with_nothing_queued_stays_silent():
     count: most scale sets sit at zero pods almost all the time.
     """
     assert rh.evaluate(
-        {"fuzebi": "izzywdev/FuzeBI"},
+        {"fuzebi": "FuzeOne/FuzeBI"},
         [],
-        {"izzywdev/FuzeBI": {"runners": []}},
-        queued_by_repo={"izzywdev/FuzeBI": []},
+        {"FuzeOne/FuzeBI": {"runners": []}},
+        queued_by_repo={"FuzeOne/FuzeBI": []},
     ) == []
 
 
@@ -320,17 +320,17 @@ def test_unreadable_queued_data_does_not_invent_a_finding():
     """A failed GitHub read must degrade to "cannot tell", never to a false alarm —
     and equally never to a false all-clear, which is why the fetch warns."""
     assert rh.evaluate(
-        {"staging": "izzywdev/FuzeInfra"},
+        {"staging": "FuzeOne/FuzeInfra"},
         [],
-        {"izzywdev/FuzeInfra": {"runners": []}},
-        queued_by_repo={"izzywdev/FuzeInfra": None},
+        {"FuzeOne/FuzeInfra": {"runners": []}},
+        queued_by_repo={"FuzeOne/FuzeInfra": None},
     ) == []
 
 
 def test_starvation_check_is_backward_compatible():
     """Called without queued data at all, behaviour is exactly as before."""
     assert rh.evaluate(
-        {"staging": "izzywdev/FuzeInfra"}, [], {"izzywdev/FuzeInfra": {"runners": []}}
+        {"staging": "FuzeOne/FuzeInfra"}, [], {"FuzeOne/FuzeInfra": {"runners": []}}
     ) == []
 
 
@@ -358,10 +358,10 @@ def test_replays_the_2026_09_27_staging_outage():
     exact state.
     """
     findings = rh.evaluate(
-        {"staging": "izzywdev/FuzeInfra"},
+        {"staging": "FuzeOne/FuzeInfra"},
         [],  # kubectl -n arc-runners get pods -> nothing
-        {"izzywdev/FuzeInfra": {"runners": []}},
-        queued_by_repo={"izzywdev/FuzeInfra": [f"run-{i}" for i in range(30)]},
+        {"FuzeOne/FuzeInfra": {"runners": []}},
+        queued_by_repo={"FuzeOne/FuzeInfra": [f"run-{i}" for i in range(30)]},
     )
     assert [f.level for f in findings] == [rh.CRITICAL]
     assert "30 queued" in findings[0].message

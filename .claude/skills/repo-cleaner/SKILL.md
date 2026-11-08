@@ -140,7 +140,7 @@ After each phase, emit a structured report:
 ## Invocation example
 
 ```
-Using the repo-cleaner skill, clean up izzywdev/FuzeSDLC:
+Using the repo-cleaner skill, clean up FuzeOne/FuzeSDLC:
 - Phase 1: audit all non-default branches; delete stale ones, open PRs for valuable ones.
 - Phase 2: for each open PR, merge if CI is green and approved, close if stale or superseded.
 - Phase 3: for each open issue, close if fixed or stale, delegate if cross-repo.

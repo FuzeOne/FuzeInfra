@@ -62,7 +62,7 @@ class Finding:
 
 
 def repo_from_config_url(url):
-    """'https://github.com/izzywdev/FuzePlan' -> 'izzywdev/FuzePlan'.
+    """'https://github.com/FuzeOne/FuzePlan' -> 'FuzeOne/FuzePlan'.
 
     Returns None for an org-level or unparseable URL rather than guessing: a wrong
     repo here would query the wrong runner list and produce a confident false result.

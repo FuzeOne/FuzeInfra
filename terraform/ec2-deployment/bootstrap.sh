@@ -38,7 +38,7 @@ chown ubuntu:ubuntu /opt/fuzeinfra
 
 # Clone FuzeInfra repository
 echo "📥 Cloning FuzeInfra repository..."
-git clone https://github.com/izzywdev/FuzeInfra.git .
+git clone https://github.com/FuzeOne/FuzeInfra.git .
 
 # Set up environment
 echo "🔧 Setting up FuzeInfra environment..."

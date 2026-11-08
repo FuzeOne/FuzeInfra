@@ -254,7 +254,7 @@ variable "authentik_host" {
     gone and Authentik is reachable only after passing Access — which is the
     stated requirement that nothing, including the IdP, is exposed publicly.
 
-    Authentik itself is deployed by izzywdev/FuzeFront, which serves this host
+    Authentik itself is deployed by FuzeOne/FuzeFront, which serves this host
     from its own Traefik Ingress.
   EOT
   type        = string

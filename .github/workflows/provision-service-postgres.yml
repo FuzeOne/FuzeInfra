@@ -111,6 +111,6 @@ jobs:
             helm/fuzeinfra/values-contabo.yaml governance/credential-handoff.json
           git commit -m "feat(postgres): provision ${SERVICE} allocation"
           git push origin "provision/postgres-${SERVICE}"
-          gh pr create --repo izzywdev/FuzeInfra --base main --head "provision/postgres-${SERVICE}" \
+          gh pr create --repo FuzeOne/FuzeInfra --base main --head "provision/postgres-${SERVICE}" \
             --title "feat(postgres): provision ${SERVICE} allocation" \
             --body 'Generated from a schema-validated service Postgres request. The PR contains strict-scoped provider ciphertext plus matching allocation and handoff enablement; no plaintext credentials or direct cluster mutation.'

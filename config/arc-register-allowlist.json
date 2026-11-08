@@ -1,11 +1,11 @@
 {
   "//": "Allowlist for arc-register.yml. A dispatched arc-register request is honored ONLY if `repo` is an exact key here. The repo-url and scale_set_name used for the actual `helm upgrade --install` come from THIS config entry, never from the dispatch payload — repository_dispatch carries no cryptographically-verifiable sender-repo field (the dispatching PAT's github.actor is the human token owner, identical across every consumer repo on a personal-account org), so the payload's `repo` claim cannot be trusted on its own. Binding the real registration target to a version-controlled config entry means a forged/typo'd `repo` string can, at worst, name a DIFFERENT allowlisted repo (auditable in git history) — it can never point registration at an arbitrary non-allowlisted target. Onboarding a new repo is a PR here, reviewed like any other config change.",
   "allowed_repos": {
-    "izzywdev/FuzeContact": { "scale_set_name": "fuzecontact" },
-    "izzywdev/FuzeHub": { "scale_set_name": "fuzehub" },
-    "izzywdev/FuzeSales": { "scale_set_name": "fuzesales" },
-    "izzywdev/FuzeService": { "scale_set_name": "fuzeservice" },
-    "izzywdev/FuzeSocial": { "scale_set_name": "fuzesocial" },
+    "FuzeOne/FuzeContact": { "scale_set_name": "fuzecontact" },
+    "FuzeOne/FuzeHub": { "scale_set_name": "fuzehub" },
+    "FuzeOne/FuzeSales": { "scale_set_name": "fuzesales" },
+    "FuzeOne/FuzeService": { "scale_set_name": "fuzeservice" },
+    "FuzeOne/FuzeSocial": { "scale_set_name": "fuzesocial" },
     "izzywdev/MendysRobotics": { "scale_set_name": "mendysrobotics" }
   },
   "allowed_actions": ["install", "uninstall"]

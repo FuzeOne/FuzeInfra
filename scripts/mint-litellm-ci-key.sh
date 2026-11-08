@@ -21,7 +21,7 @@
 #   kubectl -n fuzeinfra port-forward svc/litellm 4000:4000 &
 #   export LITELLM_MASTER_KEY=$(kubectl -n fuzeinfra get secret litellm-secret \
 #       -o jsonpath='{.data.LITELLM_MASTER_KEY}' | base64 -d)
-#   scripts/mint-litellm-ci-key.sh | gh secret set LITELLM_CI_KEY --repo izzywdev/FuzeInfra
+#   scripts/mint-litellm-ci-key.sh | gh secret set LITELLM_CI_KEY --repo FuzeOne/FuzeInfra
 #
 # The key is printed to STDOUT and nothing else is — every diagnostic goes to
 # stderr — so it pipes straight into `gh secret set` without ever landing in a
@@ -156,7 +156,7 @@ fi
 {
   echo ""
   echo "Minted. Set it as the repo secret (the key is on stdout, pipe it):"
-  echo "  scripts/mint-litellm-ci-key.sh | gh secret set LITELLM_CI_KEY --repo izzywdev/FuzeInfra"
+  echo "  scripts/mint-litellm-ci-key.sh | gh secret set LITELLM_CI_KEY --repo FuzeOne/FuzeInfra"
   echo ""
   echo "a2a-maintain prefers LITELLM_CI_KEY and falls back to LITELLM_MASTER_KEY"
   echo "with a warning, so nothing breaks in between. Once this is set, REMOVE the"

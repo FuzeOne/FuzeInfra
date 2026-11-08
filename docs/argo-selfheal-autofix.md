@@ -10,7 +10,7 @@ GitOps **without a human polling `kubectl`**.
 ArgoCD app unhealthy
   │  (argocd-notifications-cm trigger)
   ▼
-repository_dispatch  event_type=argo-out-of-sync  ──►  izzywdev/FuzeInfra
+repository_dispatch  event_type=argo-out-of-sync  ──►  FuzeOne/FuzeInfra
   │
   ▼
 .github/workflows/argo-outofsync-autofix.yml
@@ -50,7 +50,7 @@ FuzeInfra runs the Argo instance, but it **does not edit a consumer's chart** �
 that's the cross-repo delegation boundary. So the reaction routes by the app's
 `spec.source.repoURL` (carried in the dispatch payload):
 
-- **App sourced from `izzywdev/FuzeInfra`** → in-repo `devops-engineer` Claude
+- **App sourced from `FuzeOne/FuzeInfra`** → in-repo `devops-engineer` Claude
   run edits `helm/fuzeinfra/**` and opens a fix PR.
 - **App sourced from a consumer repo** (e.g. `izzywdev/MendysRobotics`) → an
   **idempotent `@fuze` issue** is opened in that repo (label `argo-autofix`,

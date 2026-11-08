@@ -24,7 +24,7 @@ A comprehensive system to eliminate port conflicts and provide clean URLs for mu
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/izzywdev/FuzeInfra.git
+git clone https://github.com/FuzeOne/FuzeInfra.git
 cd FuzeInfra
 ```
 

@@ -14,7 +14,7 @@ handoff document when the authorized workflows can complete that handoff.
 ## 1. Discover the current contract before declaring a blocker
 
 Consult `fuzeinfra-expert` and read the current default branch of
-[`izzywdev/FuzeInfra`](https://github.com/izzywdev/FuzeInfra):
+[`FuzeOne/FuzeInfra`](https://github.com/FuzeOne/FuzeInfra):
 
 - `docs/consuming-repos/POSTGRES_PROVISIONING.md`,
   `docs/consuming-repos/MONGODB_PROVISIONING.md`, and the current object-storage

@@ -4,7 +4,7 @@
 
 Everything else in the admin-plane SSO stack is declarative: Cloudflare Access lives in
 `terraform/contabo/cloudflare.tf`, Authentik's providers and groups live in blueprints in
-`izzywdev/FuzeFront`, consumer wiring lives in `helm/fuzeinfra`. All of it survives a
+`FuzeOne/FuzeFront`, consumer wiring lives in `helm/fuzeinfra`. All of it survives a
 rebuild.
 
 **Google OAuth clients do not.** Google exposes no API and no Terraform provider for
@@ -68,7 +68,7 @@ rotation. Cross-wiring them fails with `redirect_uri_mismatch`.
    and its policies, silently dropping the admin plane to email-OTP only.
 4. For the **FuzeOne** client, the secret is consumed by Authentik and security-service
    as `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`, sealed in
-   `deploy/contabo/sealed/fuzefront-secrets.yaml` (izzywdev/FuzeFront). Reseal with
+   `deploy/contabo/sealed/fuzefront-secrets.yaml` (FuzeOne/FuzeFront). Reseal with
    `scripts/seal-secret.sh` and let Argo sync.
 
 ## Adding a new host that initiates Google login

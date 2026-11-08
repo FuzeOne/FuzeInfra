@@ -95,7 +95,7 @@ jobs:
   #
   # WHY HOSTED IS NOT AUTOMATICALLY THE SAFER PLACE, which this comment used to assert. On
   # a PRIVATE repo whose Actions budget is exhausted a hosted job is never assigned a runner
-  # at all. Measured 2026-08-25 on izzywdev/FuzePlan: `runs-on: ubuntu-latest` produced no
+  # at all. Measured 2026-08-25 on FuzeOne/FuzePlan: `runs-on: ubuntu-latest` produced no
   # runner_id, no runner_name, `steps: []` and a ~4s red with no log — nothing inside the
   # job executed, so no check written in it could possibly be what failed, and `needs:
   # preflight` took the whole workflow down with it. That is BOTH outcomes the split exists

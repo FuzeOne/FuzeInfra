@@ -479,7 +479,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "v1",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/fuze-ci-autofix.yml": {
@@ -491,7 +491,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "main",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/fuze-cluster.yml": {
@@ -504,7 +504,7 @@
         "defaultBranch": "main",
         "baselineRef": "v1",
         "runner": "staging",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/fuze-code-review.yml": {
@@ -516,7 +516,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "main",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/fuze.yml": {
@@ -528,7 +528,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "v1",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/gate-frames-stamped.yml": {
@@ -551,7 +551,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "main",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/gate-line-endings.yml": {
@@ -574,7 +574,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "main",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/gate-workflow-drift.yml": {
@@ -586,7 +586,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "main",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/governance-nightly.yml": {
@@ -609,7 +609,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "v1",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/harden-gate.yml": {
@@ -654,7 +654,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "main",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/nightly-integration.yml": {
@@ -688,7 +688,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "main",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/provision.yml": {
@@ -722,7 +722,7 @@
       "renderVars": {
         "defaultBranch": "main",
         "baselineRef": "v1",
-        "repoName": "izzywdev/FuzeInfra"
+        "repoName": "FuzeOne/FuzeInfra"
       }
     },
     ".github/workflows/telegram-pr-merged.yml": {

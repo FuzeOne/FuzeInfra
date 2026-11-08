@@ -65,7 +65,7 @@
 #     repo actually has queued runs (GH_READ_TOKEN -- Actions:read scope).
 #   - If -- and only if -- at least one listener classifies as "orphaned", fires
 #     ONE `repository_dispatch` (event_type: runner-recovery) against
-#     izzywdev/FuzeInfra using GH_DISPATCH_TOKEN. It does NOT itself cancel or
+#     FuzeOne/FuzeInfra using GH_DISPATCH_TOKEN. It does NOT itself cancel or
 #     re-dispatch any run -- runner-watch.yml's `recover` job (which already
 #     holds the fuze-agent App token with actions:write) does that, and reruns
 #     its own full stranded_runs() selector as the authoritative check. This

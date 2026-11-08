@@ -34,8 +34,8 @@
 # design carries no billing dependency at all. It is also the infra repo, which makes fleet
 # runner health its domain.
 #
-#     gh api repos/izzywdev/FuzeSDLC --jq .private   => true
-#     gh api repos/izzywdev/FuzeInfra --jq .private   => false
+#     gh api repos/FuzeOne/FuzeSDLC --jq .private   => true
+#     gh api repos/FuzeOne/FuzeInfra --jq .private   => false
 #
 # HONEST STATE OF THAT ARGUMENT, MEASURED 2026-09-01 rather than assumed. The move was
 # prompted by a report that FuzeSDLC's Actions budget was exhausted and its hosted jobs were
@@ -194,7 +194,7 @@ env:
   # per step, because it uses `runner.temp` and the `runner` context does NOT exist at
   # workflow or job level - actionlint rejects it there, and at run time it would silently
   # expand to the empty string, i.e. write the fleet list to "/ruleset-fleet.json".
-  FLEET_SOURCE_REPO: izzywdev/FuzeSDLC
+  FLEET_SOURCE_REPO: FuzeOne/FuzeSDLC
   FLEET_SOURCE_PATH: governance/ruleset-fleet.json
 
 jobs:
@@ -329,7 +329,7 @@ jobs:
           # which declared an optional `runner-probe-token` secret for exactly this and
           # which this port had dropped - making the whole watcher depend on one App
           # permission that measurement showed was not granted. Probing every candidate
-          # against repos/izzywdev/FuzeHub/actions/runners (run 33521833116, status codes
+          # against repos/FuzeOne/FuzeHub/actions/runners (run 33521833116, status codes
           # only - logs here are PUBLIC):
           #     App token  403   (live: 200 on repos/<slug>, just not granted)
           #     GH_TOKEN   200

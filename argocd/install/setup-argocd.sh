@@ -62,7 +62,7 @@ echo "==> Applying AppProjects (FuzeInfra owns the destination/security boundary
 kubectl apply -f "$ARGOCD_DIR/projects/fuzeinfra.yaml"
 # Consumer projects held here are restricted (cannot deploy into the fuzeinfra
 # namespace). A product that owns its own AppProject (#639) — FuzeFront, in
-# izzywdev/FuzeFront deploy/argocd/project.yaml — is NOT applied here: it is
+# FuzeOne/FuzeFront deploy/argocd/project.yaml — is NOT applied here: it is
 # registered by argocd-register.yml, which validates it first. Applying a copy
 # from this repo as well is the two-writer conflict that froze FuzeFront (#1278).
 kubectl apply -f "$ARGOCD_DIR/projects/fuzeagent.yaml"
@@ -97,7 +97,7 @@ cat <<'EOF'
   then browse https://localhost:8080  (user: admin)
 
 NOTE: if this repo is PRIVATE, register repo credentials so Argo CD can read it:
-  argocd repo add https://github.com/izzywdev/FuzeInfra.git \
+  argocd repo add https://github.com/FuzeOne/FuzeInfra.git \
     --username <user> --password <token>
   (or create a repository Secret labeled argocd.argoproj.io/secret-type=repository)
 EOF

@@ -6,7 +6,7 @@ caught in hours instead of weeks.
 
 This is the concrete, automated implementation of *Channel C* in
 [SECURE_AGENT_SECRET_HANDOVER.md](SECURE_AGENT_SECRET_HANDOVER.md), built for
-FuzeInfra [#510](https://github.com/izzywdev/FuzeInfra/issues/510).
+FuzeInfra [#510](https://github.com/FuzeOne/FuzeInfra/issues/510).
 
 ---
 
@@ -28,8 +28,8 @@ log is retained and readable by anyone with repo access — a lesson learned whe
 automated hand-off channel and nothing replaced it. MendysRobotics' sealed
 `DATABASE_URL` silently froze on 2026-07-09 and stayed wrong until pods happened
 to restart weeks later, at which point it became a 5–6 day outage
-([#499](https://github.com/izzywdev/FuzeInfra/issues/499) /
-[#500](https://github.com/izzywdev/FuzeInfra/issues/500), fixed by hand in
+([#499](https://github.com/FuzeOne/FuzeInfra/issues/499) /
+[#500](https://github.com/FuzeOne/FuzeInfra/issues/500), fixed by hand in
 [MendysRobotics#273](https://github.com/izzywdev/MendysRobotics/pull/273)).
 
 The fix inverts the direction of trust:

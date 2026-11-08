@@ -18,7 +18,7 @@
 # private, not as a prerequisite for enabling the exporter.
 #
 # ── Keys this Secret must carry ──────────────────────────────────────────────
-#   token   A GitHub token with READ-ONLY access to izzywdev/FuzeInfra issues.
+#   token   A GitHub token with READ-ONLY access to FuzeOne/FuzeInfra issues.
 #           A fine-grained PAT with `Issues: Read` (or `Contents: Read` on a
 #           public repo) is sufficient — the exporter only ever issues
 #           GET /repos/{repo}/issues. Give it NOTHING else: this pod's stdout is

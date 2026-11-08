@@ -172,7 +172,7 @@ spec:
       selfHeal: true
     managedNamespaceMetadata:
       annotations:
-        fuzeinfra.io/owner-repo: izzywdev/FuzeInfra
+        fuzeinfra.io/owner-repo: FuzeOne/FuzeInfra
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

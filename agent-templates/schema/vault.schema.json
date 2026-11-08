@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/izzywdev/FuzeSDLC/agent-templates/vault.schema.json",
+  "$id": "https://github.com/FuzeOne/FuzeSDLC/agent-templates/vault.schema.json",
   "title": "Managed-Agents vault + credentials template",
   "description": "A vault (POST /v1/vaults) and its credentials (POST /v1/vaults/{id}/credentials). Secret values MUST be ${ENV_VAR} references expanded at sync time — never literal.",
   "type": "object",

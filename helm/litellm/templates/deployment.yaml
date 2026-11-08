@@ -170,7 +170,7 @@ spec:
             # The redirect_uri LiteLLM sends is "<PROXY_BASE_URL>/sso/callback".
             # Authentik matches it strictly, so this must be the external host
             # the browser sees, and it must match the redirect_uris entry on the
-            # "FuzeInfra LiteLLM" provider in izzywdev/FuzeFront exactly —
+            # "FuzeInfra LiteLLM" provider in FuzeOne/FuzeFront exactly —
             # trailing slash included, or rather excluded.
             - name: PROXY_BASE_URL
               value: {{ .Values.sso.proxyBaseUrl | quote }}

@@ -54,7 +54,7 @@ jobs:
     steps:
       - name: Dispatch to FuzeInfra
         run: |
-          curl -X POST https://api.github.com/repos/izzywdev/FuzeInfra/dispatches \
+          curl -X POST https://api.github.com/repos/FuzeOne/FuzeInfra/dispatches \
             -H "Authorization: Bearer ${{ secrets.FUZEINFRA_DISPATCH_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{

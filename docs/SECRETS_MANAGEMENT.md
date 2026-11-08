@@ -283,7 +283,7 @@ For the **fuzeone onboarding toolkit**, fetch both in one step:
 
 ```bash
 # in a joining repo's bootstrap
-curl -fsSL https://raw.githubusercontent.com/izzywdev/FuzeInfra/main/scripts/seal-secret.sh \
+curl -fsSL https://raw.githubusercontent.com/FuzeOne/FuzeInfra/main/scripts/seal-secret.sh \
   -o deploy/scripts/seal-secret.sh && chmod +x deploy/scripts/seal-secret.sh
 export FUZEINFRA_SEALED_CERT_URL=https://sealed-secrets.prod.fuzefront.com/v1/cert.pem
 ```

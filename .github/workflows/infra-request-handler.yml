@@ -35,7 +35,7 @@
 #   TF_STATE_* backend creds     # for the FuzeInfra-owned remote TF state backend
 #
 # Dispatch client_payload shape (sent by the consumer's infra-dispatch.yml):
-#   { "repo": "izzywdev/FuzeFront", "ref": "main",
+#   { "repo": "FuzeOne/FuzeFront", "ref": "main",
 #     "requests": [ {name, product_id, region, role, labels}, ... ],
 #     "terraform_bundle": "<base64-gzipped-tar-of-deploy/terraform>"  # optional; for private repos
 #   }

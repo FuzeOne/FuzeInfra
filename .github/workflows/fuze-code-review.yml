@@ -63,7 +63,7 @@ name: Fuze Code Review
 # An outage on a non-sensitive PR PASSES; on a sensitive one it FAILS (outage_blocking).
 # Neither carries findings, so fuze-ci-autofix never tries to "fix" either. Outage comments
 # carry `<!-- fuze-code-review-outage -->` and are PATCHed in place on a re-run.
-# (Narrowing mirrored from izzywdev/FuzeFront#1266.)
+# (Narrowing mirrored from FuzeOne/FuzeFront#1266.)
 #
 # SAFETY PROPERTIES PRESERVED VERBATIM from the pre-mandatory version:
 #   - `gh pr review --approve` fires ONLY on a schema-valid, self-consistent
@@ -108,7 +108,7 @@ name: Fuze Code Review
 # WHY THE CHOOSER IS NOW SHIPPED (it once was not). This template previously omitted the
 # chooser because the chooser JOB itself ran on `fuze-runner`, so a consumer with no such
 # pool could not run it and its check would queue forever. That is now fixed at the root: the
-# chooser runs HOSTED-DEFAULT and NEVER on the pool it chooses (izzywdev/FuzeSDLC#266) — a
+# chooser runs HOSTED-DEFAULT and NEVER on the pool it chooses (FuzeOne/FuzeSDLC#266) — a
 # chooser stamped onto `fuze-runner` cannot start when that pool is down, deadlocking every
 # job that `needs:` it. With a hosted default the chooser always starts, on any consumer,
 # pool or no pool. A repo is still listed `Fuze Code Review` required ONLY after it is
@@ -146,12 +146,12 @@ jobs:
   # cycle, returning to hosted when the budget resets. A pool at 0 online runners is still
   # chosen — the sets scale from zero. It runs HOSTED-DEFAULT and never on the pool it
   # chooses: a chooser stamped onto a pool cannot start when that pool is down, deadlocking
-  # every job that needs it (izzywdev/FuzeSDLC#266). This chooser job is NOT itself a
+  # every job that needs it (FuzeOne/FuzeSDLC#266). This chooser job is NOT itself a
   # required status context — only the decisive `Fuze Code Review` job below is.
   pick-runner:
     # The chooser runs HOSTED-DEFAULT and NEVER on the pool it chooses: a chooser stamped
     # onto `fuze-runner` cannot start when that pool is down, so every job that `needs:` it
-    # would queue forever behind a decision that can never be made (izzywdev/FuzeSDLC#266).
+    # would queue forever behind a decision that can never be made (FuzeOne/FuzeSDLC#266).
     # `vars.HARDEN_GATE_RUNNER` pins it (or another pool) when set; `vars.CI_RUNNER_LABELS` is
     # Runner Watch's observed-online label; else `ubuntu-latest`.
     runs-on: ${{ vars.HARDEN_GATE_RUNNER || vars.CI_RUNNER_LABELS || 'ubuntu-latest' }}

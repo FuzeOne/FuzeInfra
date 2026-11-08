@@ -54,7 +54,7 @@ metadata:
 spec:
   project: fuzemarket
   source:
-    repoURL: https://github.com/izzywdev/FuzeMarket.git
+    repoURL: https://github.com/FuzeOne/FuzeMarket.git
     targetRevision: main
     path: deploy/helm/fuzemarket
     helm:

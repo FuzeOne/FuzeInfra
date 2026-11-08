@@ -199,7 +199,7 @@ repo+PR and `cluster-query.yml` dispatch only (§7.2).
 
 ## 7. Cross-repo requests (not edited here)
 
-### 7.1 `@fuze` → izzywdev/FuzeFront
+### 7.1 `@fuze` → FuzeOne/FuzeFront
 **What:** (a) Accept scope `fuzeagent:incident-session:create` in workload-identity declarations (it
 is already free-form text; confirm nothing allowlists scope names). (b) Allow `fuzefront-security`
 to read workload-identity ConfigMaps in the `fuzeinfra` namespace (this is a `registryNamespaces`
@@ -214,7 +214,7 @@ fuzeagent:incident-session:create` in `fuzeinfra`, a pod using SA `alert-session
 HTTP 200 from `/tokens/workload` and a JWT whose `scope` is exactly that string and `sub` is
 `service:alert-session-dispatcher`; an SA without a declaration gets 401/403.
 
-### 7.2 `@fuze` → izzywdev/FuzeAgent
+### 7.2 `@fuze` → FuzeOne/FuzeAgent
 **What:** a new route (suggested `POST /api/orchestrator/incident-sessions`) that:
 1. authenticates a FuzeFront `fuze-workload` bearer (introspect via `/tokens/introspect` or verify
    the signature per FuzeAgent's existing auth mode), requires scope

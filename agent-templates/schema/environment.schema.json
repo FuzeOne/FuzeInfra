@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/izzywdev/FuzeSDLC/agent-templates/environment.schema.json",
+  "$id": "https://github.com/FuzeOne/FuzeSDLC/agent-templates/environment.schema.json",
   "title": "Managed-Agents environment",
   "description": "A POST /v1/environments payload. type=cloud runs in an Anthropic sandbox (packages + networking); type=self_hosted is a work queue drained by our own worker (worker/ image carries the tools + credentials).",
   "type": "object",

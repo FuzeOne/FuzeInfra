@@ -113,7 +113,7 @@ VERIFY_ONLY="${1:-}"
 # running on these nodes has to tolerate it FIRST:
 #   * FuzeInfra chart workloads      -- done (#910)
 #   * longhorn / coredns / ARC / Argo -- done (#921)
-#   * FuzeFront                       -- NOT DONE (izzywdev/FuzeFront#913)
+#   * FuzeFront                       -- NOT DONE (FuzeOne/FuzeFront#913)
 #   * the LIVE Longhorn taint-toleration Setting -- NOT DONE; defaultSettings
 #     is not reapplied on upgrade, so the running cluster needs an explicit
 #     patch, and Longhorn requires no volume be attached when it changes.

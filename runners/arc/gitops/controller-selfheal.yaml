@@ -69,7 +69,7 @@
 #      4-vCPU CI node, so a handful of zombies across repos also exhausts node
 #      CPU/RAM, so OTHER repos' fresh runners go Pending too. Observed: fuzeplan
 #      and fuzesdlc CI both queued for hours behind runner pods that had been
-#      Running 2.5h+ still renewing the job lease (izzywdev/FuzePlan ci-cd.yml
+#      Running 2.5h+ still renewing the job lease (FuzeOne/FuzePlan ci-cd.yml
 #      "Run Playwright tests", no timeout-minutes). Check 4 reaps any
 #      EphemeralRunner Running past $RUNNER_STUCK_SECS — well above any legit
 #      job on this stack (harden-gate minutes, full compose+e2e well under an

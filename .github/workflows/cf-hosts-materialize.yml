@@ -7,7 +7,7 @@ name: CF hosts materialize
 # review/approval step — this workflow NEVER auto-merges.
 #
 # Trigger from a consumer repo CI job:
-#   curl -X POST https://api.github.com/repos/izzywdev/FuzeInfra/dispatches \
+#   curl -X POST https://api.github.com/repos/FuzeOne/FuzeInfra/dispatches \
 #     -H "Authorization: Bearer $FUZEINFRA_DISPATCH_TOKEN" \
 #     -H "Content-Type: application/json" \
 #     -d '{"event_type":"cf-hosts-declare","client_payload":{"repo":"izzywdev/MyApp","ref":"abc1234"}}'
@@ -80,7 +80,7 @@ jobs:
           REPO="${{ steps.payload.outputs.repo }}"
           LOG=$(cat /tmp/materialize.out)
           gh issue create \
-            --repo izzywdev/FuzeInfra \
+            --repo FuzeOne/FuzeInfra \
             --title "CF host declaration rejected — $REPO" \
             --label "policy-violation" \
             --body "The \`cf-hosts-declare\` dispatch from **$REPO** (ref \`${{ steps.payload.outputs.ref }}\`) was **rejected** by FuzeInfra policy.

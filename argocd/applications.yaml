@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/izzywdev/FuzeInfra'
+    repoURL: 'https://github.com/FuzeOne/FuzeInfra'
     path: monitoring/health-dashboard
     targetRevision: main
   destination:
@@ -33,7 +33,7 @@ spec:
   
   # Source repositories
   sourceRepos:
-  - 'https://github.com/izzywdev/FuzeInfra'
+  - 'https://github.com/FuzeOne/FuzeInfra'
   - 'https://charts.bitnami.com/bitnami'
   - 'https://prometheus-community.github.io/helm-charts'
   

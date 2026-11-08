@@ -15,7 +15,7 @@ FuzeInfra is **shared** infrastructure. Multiple projects run against the same d
 | **Never `FLUSHALL`** on Redis | Clears every project's keys from the shared instance. |
 | **Never delete Kafka topics** you did not create | Consumers from other projects will break silently. |
 | **One owner per Argo CD Application** | Each Application must be owned by exactly one project; never edit another project's Application manifest. |
-| **Never modify `docker-compose.FuzeInfra.yml`** from your project | Treat the shared compose file as read-only infrastructure — open a PR against `izzywdev/FuzeInfra` instead. |
+| **Never modify `docker-compose.FuzeInfra.yml`** from your project | Treat the shared compose file as read-only infrastructure — open a PR against `FuzeOne/FuzeInfra` instead. |
 
 ---
 

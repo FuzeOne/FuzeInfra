@@ -7,7 +7,7 @@ name: Fuze (cluster-capable)
 # THIS FILE IS NOT PART OF THE STANDARD STACK AND MUST NEVER BECOME PART OF IT.
 # It is installed by scripts/bootstrap/caps/workflows.py ONLY into a repo whose
 # `.fuze/manifest.json` declares `clusterOps.enabled: true`. Today exactly one repo
-# qualifies — izzywdev/FuzeInfra, which owns the cluster — and the baseline forbids any
+# qualifies — FuzeOne/FuzeInfra, which owns the cluster — and the baseline forbids any
 # other repo from mutating it (CLAUDE.baseline.md §1: consuming repos delegate infra
 # changes to FuzeInfra via `@fuze` and never operate the cluster themselves). A product
 # repo that declared this flag would be declaring a policy violation, not enabling a

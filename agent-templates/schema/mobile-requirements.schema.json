@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/izzywdev/FuzeSDLC/agent-templates/mobile-requirements.schema.json",
+  "$id": "https://github.com/FuzeOne/FuzeSDLC/agent-templates/mobile-requirements.schema.json",
   "title": "Mobile requirements contract",
   "description": "Per-UI-package declaration of mobile scope + acceptance, read by the mobile-engineer on merge. Lives as `mobile.requirements.yaml` at the package root, or as a `mobile` block inside package.json / service.json / .fuze/manifest.json.",
   "type": "object",

@@ -610,7 +610,7 @@ kafkaUi:
       # The same Authentik group already gates Grafana (grafana.oidc
       # .roleAttributePath) and ArgoCD (argocd/cluster-settings/argocd-rbac-cm
       # .yaml -> `g, fuzeinfra-admins, role:admin`). It is created by the
-      # groups-fuzeinfra-admins.yaml blueprint in izzywdev/FuzeFront. Renaming it
+      # groups-fuzeinfra-admins.yaml blueprint in FuzeOne/FuzeFront. Renaming it
       # in one consumer silently removes everyone's access in that consumer only.
       adminGroup: fuzeinfra-admins
       # Name of the kafka-ui role the group is mapped onto. Internal identifier
@@ -756,7 +756,7 @@ grafana:
     secretKey: CLIENT_SECRET
     # JMESPath over the ID-token claims. Requires the `groups` scope to be
     # granted by the Authentik provider, and the group to exist there
-    # (blueprint: groups-fuzeinfra-admins.yaml in izzywdev/FuzeFront).
+    # (blueprint: groups-fuzeinfra-admins.yaml in FuzeOne/FuzeFront).
     #
     # NO `|| 'Viewer'` FALLBACK — that is deliberate, and it is a fix.
     # With a fallback this expression can never evaluate to nothing, so
@@ -1966,7 +1966,7 @@ alertSessionDispatcher:
   workloadScope: "fuzeagent:incident-session:create"
   audit:
     # Empty disables the GitHub audit issue (structured log only).
-    repo: izzywdev/FuzeInfra
+    repo: FuzeOne/FuzeInfra
   persistence:
     enabled: true
     size: 256Mi
@@ -2021,7 +2021,7 @@ selfHealMetrics:
   port: 9109
 
   # Repo whose autofix labels are counted.
-  githubRepo: izzywdev/FuzeInfra
+  githubRepo: FuzeOne/FuzeInfra
   pollIntervalSeconds: 600
 
   # label -> the `system` label value on every metric. Data-driven on purpose:

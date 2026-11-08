@@ -577,7 +577,7 @@ def load_manifest(root: str) -> dict:
 
 
 def repo_short_name(manifest: dict) -> str:
-    """`izzywdev/FuzeFront` -> `FuzeFront`."""
+    """`FuzeOne/FuzeFront` -> `FuzeFront`."""
     return str(manifest.get("repo", "")).split("/")[-1]
 
 

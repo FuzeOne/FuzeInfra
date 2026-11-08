@@ -11,7 +11,7 @@ self-hosted app on `*.prod.fuzefront.com`.
 Consumer repos do not have that context. Twice now a consumer created its OWN
 `type = "self_hosted"` Access application for a host FuzeInfra already publishes
 a tile for, with `app_launcher_visible: true`, out-of-band via the Cloudflare
-API — see izzywdev/FuzeFront `docs/runbooks/unleash-launcher-and-developer-flags.md`,
+API — see FuzeOne/FuzeFront `docs/runbooks/unleash-launcher-and-developer-flags.md`,
 which records creating app `514f8a21-3793-4726-858e-819556fbe346` for
 `unleash.prod.fuzefront.com`. The result is TWO tiles for one service: the
 Terraform bookmark (correct logo) and the consumer's self-hosted app (no

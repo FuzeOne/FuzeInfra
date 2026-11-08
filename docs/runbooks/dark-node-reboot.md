@@ -113,14 +113,14 @@ a node the ladder refused, or for a human who wants to act before 3 reboots
 + 2h elapse:
 
 ```bash
-gh workflow run contabo-instance-reboot.yml --repo izzywdev/FuzeInfra \
+gh workflow run contabo-instance-reboot.yml --repo FuzeOne/FuzeInfra \
   -f node_name=fuze-core-3 \
   -f external_ip=194.163.136.242 \
   -f reason="Ready=Unknown 4.6d, other_ready_control_plane_nodes=2 — not a quorum risk" \
   -f confirm=RESTART \
   -f issue_number=<the watchdog issue number>
 
-gh workflow run ca-reinstall-controlplane.yml --repo izzywdev/FuzeInfra \
+gh workflow run ca-reinstall-controlplane.yml --repo FuzeOne/FuzeInfra \
   -f node_name=fuze-core-3 \
   -f external_ip=194.163.136.242 \
   -f template=cluster-autoscaler/contabo-externalgrpc/deploy/cp-userdata-eth1-join.template \

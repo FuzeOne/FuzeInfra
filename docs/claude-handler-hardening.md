@@ -30,7 +30,7 @@ the API server rejects anything outside these rules.
 kubectl apply -f k8s/claude-handler/rbac.yaml
 
 # 2. Mint a kubeconfig for the scoped SA and store it as the KUBE_CONFIG secret:
-bash scripts/generate-claude-handler-kubeconfig.sh | gh secret set KUBE_CONFIG --repo izzywdev/FuzeInfra
+bash scripts/generate-claude-handler-kubeconfig.sh | gh secret set KUBE_CONFIG --repo FuzeOne/FuzeInfra
 ```
 
 `generate-claude-handler-kubeconfig.sh` defaults to a **short-lived** bound token
@@ -73,7 +73,7 @@ minted per run and scoped to the specific repos/permissions:
 - Scoped to **this repository only** (not the whole org/account).
 
 Create a GitHub App (or reuse the handler's App), grant it exactly those permissions,
-install it on `izzywdev/FuzeInfra`, and store `APP_ID` + `APP_PRIVATE_KEY` as secrets.
+install it on `FuzeOne/FuzeInfra`, and store `APP_ID` + `APP_PRIVATE_KEY` as secrets.
 Then mint the token in-workflow:
 
 ```yaml

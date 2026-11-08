@@ -8,15 +8,15 @@ PR (or provisioning run) that creates an allocation. See
 
 | App | Role | Database | Consumer repo | Status |
 |---|---|---|---|---|
-| fuzex | `fuzex_svc` | `fuzex_design_frames` | izzywdev/FuzeX | declared; generic `provision-service-postgres.yml` seals and enables the runtime declaration atomically, then `fuzex-postgres` handoff delivers the consumer URL |
-| fuzekeys | `fuzekeys_user` | `fuzekeys` | izzywdev/FuzeKeys | active (FuzeInfra#136) |
-| fuzesales | `fuzesales_svc` | `fuzesales` | izzywdev/FuzeSales | declared (FuzeInfra#153) |
-| fuzecontact | `fuzecontact_svc` | `fuzecontact` | izzywdev/FuzeContact | declared (FuzeInfra#153) |
-| fuzeservice | `fuzeservice_svc` | `fuzeservice` | izzywdev/FuzeService | declared (FuzeInfra#153) |
-| fuzesocial | `fuzesocial_app` | `fuzesocial` | izzywdev/FuzeSocial | active (FuzeInfra#150) — owner+grants verified; consumer-authoritative credential in `fuzesocial/fuzesocial-secrets:DB_PASSWORD` |
-| fuzequality | `fuzequality_user` | `fuzequality` | izzywdev/FuzeFront (`FuzeQuality`) | enabled in prod GitOps; automated consumer hand-off declared |
-| authentik-mendys | `authentik_mendys_user` | `authentik_mendys` | izzywdev/FuzeFront (MendysRobotics IdP silo) | declared — gated off until FuzeFront seals `authentik-mendys-db-credentials` for the `fuzeinfra` namespace |
-| fuzehub | `fuzehub_svc` | `fuzehub` | izzywdev/FuzeHub | declared |
+| fuzex | `fuzex_svc` | `fuzex_design_frames` | FuzeOne/FuzeX | declared; generic `provision-service-postgres.yml` seals and enables the runtime declaration atomically, then `fuzex-postgres` handoff delivers the consumer URL |
+| fuzekeys | `fuzekeys_user` | `fuzekeys` | FuzeOne/FuzeKeys | active (FuzeInfra#136) |
+| fuzesales | `fuzesales_svc` | `fuzesales` | FuzeOne/FuzeSales | declared (FuzeInfra#153) |
+| fuzecontact | `fuzecontact_svc` | `fuzecontact` | FuzeOne/FuzeContact | declared (FuzeInfra#153) |
+| fuzeservice | `fuzeservice_svc` | `fuzeservice` | FuzeOne/FuzeService | declared (FuzeInfra#153) |
+| fuzesocial | `fuzesocial_app` | `fuzesocial` | FuzeOne/FuzeSocial | active (FuzeInfra#150) — owner+grants verified; consumer-authoritative credential in `fuzesocial/fuzesocial-secrets:DB_PASSWORD` |
+| fuzequality | `fuzequality_user` | `fuzequality` | FuzeOne/FuzeFront (`FuzeQuality`) | enabled in prod GitOps; automated consumer hand-off declared |
+| authentik-mendys | `authentik_mendys_user` | `authentik_mendys` | FuzeOne/FuzeFront (MendysRobotics IdP silo) | declared — gated off until FuzeFront seals `authentik-mendys-db-credentials` for the `fuzeinfra` namespace |
+| fuzehub | `fuzehub_svc` | `fuzehub` | FuzeOne/FuzeHub | declared |
 
 > `authentik_mendys` backs a **second Authentik instance** deployed by the
 > FuzeFront chart, serving MendysRobotics as an isolated identity silo
@@ -60,8 +60,8 @@ Host: `fuzeinfra-mariadb.fuzeinfra.svc.cluster.local:3306`
 
 | App | ACL user | Key prefix | DB index | Consumer repo | Status |
 |---|---|---|---|---|---|
-| fuzekeys | `fuzekeys` | `fuzekeys:` | 1 | izzywdev/FuzeKeys | active (FuzeInfra#136) |
-| authentik-mendys | (shared password) | authentik-internal | 2 | izzywdev/FuzeFront (MendysRobotics IdP silo) | declared |
+| fuzekeys | `fuzekeys` | `fuzekeys:` | 1 | FuzeOne/FuzeKeys | active (FuzeInfra#136) |
+| authentik-mendys | (shared password) | authentik-internal | 2 | FuzeOne/FuzeFront (MendysRobotics IdP silo) | declared |
 
 DB index 0 is reserved for FuzeInfra platform services.
 
@@ -82,7 +82,7 @@ secret + flips `serviceNeo4jInstances[<name>].enabled` gate — no manual steps)
 
 | App | Instance name | Sealed secret | Consumer repo | Status |
 |---|---|---|---|---|
-| FuzePlan | `fuzeplan` | `neo4j-fuzeplan-credentials` | izzywdev/FuzePlan | declared (FuzeInfra#157) — run `provision-fuzeplan-neo4j` workflow to activate |
+| FuzePlan | `fuzeplan` | `neo4j-fuzeplan-credentials` | FuzeOne/FuzePlan | declared (FuzeInfra#157) — run `provision-fuzeplan-neo4j` workflow to activate |
 
 Bolt address template: `bolt://fuzeinfra-neo4j-<name>.fuzeinfra.svc.cluster.local:7687`
 
@@ -94,7 +94,7 @@ Bolt address template: `bolt://fuzeinfra-neo4j-<name>.fuzeinfra.svc.cluster.loca
 
 | App | Tenant | Database | Bootstrap collection | Consumer repo | Status |
 |---|---|---|---|---|---|
-| FuzePlan repo-digester | `fuzeplan` | `repo-digester` | `repo_digester_ready` | izzywdev/FuzePlan | declared (FuzeInfra#168 corrective follow-up) |
+| FuzePlan repo-digester | `fuzeplan` | `repo-digester` | `repo_digester_ready` | FuzeOne/FuzePlan | declared (FuzeInfra#168 corrective follow-up) |
 | FuzeQuality | `fuzequality` | `fuzequality` | `fuzequality_ready` | izzywdev/FuzeQuality | declared (FuzeInfra#168 corrective follow-up) |
 
 Each row has a unique sealed token and an explicit NetworkPolicy peer. Tenant

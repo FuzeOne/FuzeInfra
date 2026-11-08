@@ -145,7 +145,7 @@ consuming repo can answer "is my app running / why is that pod down / did Argo s
 itself instead of relaying `kubectl` output through a human.
 
 ```bash
-gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
   -f event_type=cluster-query \
   -f 'client_payload[kubectl_args]=-n <my-namespace> get pods -o wide'
 # then read the job log for the output

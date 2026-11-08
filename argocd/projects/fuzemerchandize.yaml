@@ -6,7 +6,7 @@ metadata:
 spec:
   description: FuzeMerchandize product (consumer of FuzeInfra) — may deploy ONLY into its own namespace.
   sourceRepos:
-    - https://github.com/izzywdev/FuzeMerchandize.git
+    - https://github.com/FuzeOne/FuzeMerchandize.git
   destinations:
     - namespace: fuzemerchandize
       server: https://kubernetes.default.svc

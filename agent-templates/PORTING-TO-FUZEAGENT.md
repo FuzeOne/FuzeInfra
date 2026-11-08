@@ -1,6 +1,6 @@
 # ⚠️ This orchestration feature belongs in FuzeAgent — port it there
 
-**Status: prototyped in FuzeInfra, destined for [FuzeAgent](https://github.com/izzywdev/FuzeAgent).**
+**Status: prototyped in FuzeInfra, destined for [FuzeAgent](https://github.com/FuzeOne/FuzeAgent).**
 
 ## Why it's here (and why that's temporary)
 

@@ -1284,7 +1284,7 @@ def load_policy(root: str, explicit: str = ""):
 
 
 def repo_key(root: str, explicit: str = "") -> str:
-    """Short repo name, lowercased -- `izzywdev/FuzeService` -> `fuzeservice`."""
+    """Short repo name, lowercased -- `FuzeOne/FuzeService` -> `fuzeservice`."""
     name = explicit or os.environ.get("GITHUB_REPOSITORY", "")
     if not name:
         try:

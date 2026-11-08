@@ -350,7 +350,7 @@ class StrandedRuns(unittest.TestCase):
 class State(unittest.TestCase):
 
     def test_hysteresis_state_round_trips(self):
-        obs = {"izzywdev/FuzeHub": rw.Observation("ubuntu-latest", 1)}
+        obs = {"FuzeOne/FuzeHub": rw.Observation("ubuntu-latest", 1)}
         self.assertEqual(rw.load_state(rw.dump_state(obs)), obs)
 
     def test_corrupt_or_absent_state_degrades_to_empty_rather_than_raising(self):
@@ -401,14 +401,14 @@ class FleetAndPolicy(unittest.TestCase):
         fixture = os.path.join(self.tmp, "ruleset-fleet.json")
         with open(fixture, "w", encoding="utf-8") as fh:
             json.dump({
-                "owner": "izzywdev",
+                "owner": "FuzeOne",
                 "repos": ["FuzeHub", "FuzeFront", "FuzeInfra", "FuzeSDLC"],
                 "excluded": {"FuzeInfra": "infra repo", "FuzeSDLC": "the hub itself"},
             }, fh)
         repos = rw.fleet_repos(fixture)
-        self.assertIn("izzywdev/FuzeHub", repos)
-        self.assertNotIn("izzywdev/FuzeInfra", repos, "`excluded` must be honoured")
-        self.assertNotIn("izzywdev/FuzeSDLC", repos)
+        self.assertIn("FuzeOne/FuzeHub", repos)
+        self.assertNotIn("FuzeOne/FuzeInfra", repos, "`excluded` must be honoured")
+        self.assertNotIn("FuzeOne/FuzeSDLC", repos)
 
     def test_an_absent_fleet_file_raises_rather_than_sweeping_nothing(self):
         """The default FLEET_FILE path does NOT exist in a FuzeInfra checkout, by design.
@@ -587,7 +587,7 @@ class RunsInThePublicRepo(unittest.TestCase):
         counter and the recovered-run ledger). Left pointing at the authoring repo, every
         run would read and write its state in a repo this workflow does not run in - and
         the hysteresis counter would be shared with a watcher that no longer exists."""
-        self.assertEqual(_hub_default(), "izzywdev/FuzeInfra")
+        self.assertEqual(_hub_default(), "FuzeOne/FuzeInfra")
 
     def test_the_fleet_list_is_not_vendored_into_this_repo(self):
         """The hub owns the list. A committed copy here is a second source of truth that
@@ -684,11 +684,11 @@ class FleetPreflight(unittest.TestCase):
         spec.loader.exec_module(cls.pf)
 
     def good(self):
-        return {"owner": "izzywdev", "repos": ["FuzeHub", "FuzeInfra"],
+        return {"owner": "FuzeOne", "repos": ["FuzeHub", "FuzeInfra"],
                 "excluded": {"FuzeInfra": "infra repo"}}
 
     def test_a_real_fleet_list_reduces_the_same_way_fleet_repos_does(self):
-        self.assertEqual(self.pf.preflight(self.good()), ["izzywdev/FuzeHub"])
+        self.assertEqual(self.pf.preflight(self.good()), ["FuzeOne/FuzeHub"])
 
     def test_a_github_api_error_body_is_fatal_and_names_the_missing_grant(self):
         with self.assertRaises(self.pf.FleetPreflightError) as ctx:
@@ -699,7 +699,7 @@ class FleetPreflight(unittest.TestCase):
 
     def test_an_empty_fleet_is_fatal_not_a_clean_run(self):
         with self.assertRaises(self.pf.FleetPreflightError) as ctx:
-            self.pf.preflight({"owner": "izzywdev", "repos": ["FuzeInfra"],
+            self.pf.preflight({"owner": "FuzeOne", "repos": ["FuzeInfra"],
                                "excluded": {"FuzeInfra": "x"}})
         self.assertIn("EMPTY", str(ctx.exception))
 
@@ -793,7 +793,7 @@ class SystematicBlindnessFailsTheRun(unittest.TestCase):
                                        declared_pool="b", online_runners=None),
         })
         rc = rw.run_decide(["izzywdev/A", "izzywdev/B"], rw.Policy(),
-                           apply=False, hub="izzywdev/FuzeInfra")
+                           apply=False, hub="FuzeOne/FuzeInfra")
         self.assertEqual(rc, 1, "a fleet-wide blind run must not exit 0")
 
     def test_a_partial_probe_failure_is_still_a_success(self):
@@ -807,7 +807,7 @@ class SystematicBlindnessFailsTheRun(unittest.TestCase):
                                        declared_pool="b", online_runners=3),
         })
         rc = rw.run_decide(["izzywdev/A", "izzywdev/B"], rw.Policy(),
-                           apply=False, hub="izzywdev/FuzeInfra")
+                           apply=False, hub="FuzeOne/FuzeInfra")
         self.assertEqual(rc, 0)
 
     def test_an_all_public_fleet_does_not_trip_it(self):
@@ -818,7 +818,7 @@ class SystematicBlindnessFailsTheRun(unittest.TestCase):
             "izzywdev/B": rw.RepoFacts("izzywdev/B", private=False, online_runners=None),
         })
         rc = rw.run_decide(["izzywdev/A", "izzywdev/B"], rw.Policy(),
-                           apply=False, hub="izzywdev/FuzeInfra")
+                           apply=False, hub="FuzeOne/FuzeInfra")
         self.assertEqual(rc, 0)
 
     def test_check_mode_writes_nothing_even_while_failing(self):
@@ -826,7 +826,7 @@ class SystematicBlindnessFailsTheRun(unittest.TestCase):
         and exits non-zero; it must still not touch a single variable."""
         self.stub({"izzywdev/A": rw.RepoFacts("izzywdev/A", private=True,
                                               declared_pool="a", online_runners=None)})
-        rw.run_decide(["izzywdev/A"], rw.Policy(), apply=False, hub="izzywdev/FuzeInfra")
+        rw.run_decide(["izzywdev/A"], rw.Policy(), apply=False, hub="FuzeOne/FuzeInfra")
         self.assertEqual(self.calls, [])
 
 
@@ -919,7 +919,7 @@ class ProbeTokenDoesNotSoftenTheFailure(unittest.TestCase):
         rw.probe_repo = lambda slug, probe_token=None: rw.RepoFacts(
             slug, private=True, declared_pool="p", online_runners=None)
         rc = rw.run_decide(["izzywdev/A"], rw.Policy(), apply=False,
-                           hub="izzywdev/FuzeInfra", probe_token="PROBE")
+                           hub="FuzeOne/FuzeInfra", probe_token="PROBE")
         self.assertEqual(rc, 1, "a supplied probe token must not make blindness green")
 
     def test_a_working_probe_token_produces_a_real_decision(self):
@@ -927,7 +927,7 @@ class ProbeTokenDoesNotSoftenTheFailure(unittest.TestCase):
             slug, private=True, declared_pool="p",
             online_runners=(3 if probe_token else None))
         rc = rw.run_decide(["izzywdev/A"], rw.Policy(), apply=False,
-                           hub="izzywdev/FuzeInfra", probe_token="PROBE")
+                           hub="FuzeOne/FuzeInfra", probe_token="PROBE")
         self.assertEqual(rc, 0)
 
 

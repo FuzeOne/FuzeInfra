@@ -130,8 +130,8 @@ FuzeInfra is PUBLIC, where Actions is free and unmetered, so the same hosted-onl
 has no billing dependency at all; it is also the infra repo, which makes fleet runner
 health its natural domain.
 
-    gh api repos/izzywdev/FuzeSDLC --jq .private   => true
-    gh api repos/izzywdev/FuzeInfra --jq .private   => false
+    gh api repos/FuzeOne/FuzeSDLC --jq .private   => true
+    gh api repos/FuzeOne/FuzeInfra --jq .private   => false
 
 MEASURED, NOT ASSUMED (2026-09-01). The move was prompted by a report that FuzeSDLC's
 budget was exhausted and its hosted jobs were failing instantly. That symptom is NOT
@@ -145,7 +145,7 @@ selects, and precisely the never-reporting required check this design exists to 
 
 Three consequences, all of them mechanical rather than design changes:
 
-  1. THE HUB IS FuzeInfra. `--hub` defaults to `izzywdev/FuzeInfra`, and the two durable
+  1. THE HUB IS FuzeInfra. `--hub` defaults to `FuzeOne/FuzeInfra`, and the two durable
      state variables (STATE_VAR_DECIDE / STATE_VAR_RECOVER) live on FuzeInfra.
 
   2. THE FLEET LIST IS STILL FuzeSDLC'S. governance/ruleset-fleet.json stays in the hub of
@@ -177,7 +177,7 @@ THE PROBE-TOKEN ESCAPE HATCH  (restored from #249, which had it and this port dr
 
 Dropping it made the whole watcher depend on ONE App permission, and measurement showed
 that dependency was already unmet. Probing every candidate credential against
-`GET /repos/izzywdev/FuzeHub/actions/runners` (run 33521833116; status codes only, no
+`GET /repos/FuzeOne/FuzeHub/actions/runners` (run 33521833116; status codes only, no
 values, logs here are public):
 
     APP_TOKEN                   403      <- authenticated (200 on repos/<slug>) but NOT granted
@@ -1098,7 +1098,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--policy-file", default=POLICY_FILE)
     ap.add_argument("--repos", default="",
                     help="comma-separated owner/name slugs — empty = the whole fleet")
-    ap.add_argument("--hub", default=os.environ.get("RUNNER_WATCH_HUB", "izzywdev/FuzeInfra"),
+    ap.add_argument("--hub", default=os.environ.get("RUNNER_WATCH_HUB", "FuzeOne/FuzeInfra"),
                     help="repo whose variables hold the watcher's durable state")
     ap.add_argument("--stranded-minutes", type=int, default=None,
                     help="override governance/runner-watch.json's stranded_minutes")

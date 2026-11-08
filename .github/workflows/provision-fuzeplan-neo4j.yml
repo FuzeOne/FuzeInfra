@@ -8,7 +8,7 @@ name: Provision FuzePlan Neo4j instance
 #   2. Seals it as `neo4j-fuzeplan-credentials` (key: password) for the
 #      fuzeinfra namespace — the StatefulSet reads NEO4J_PASSWORD via secretKeyRef,
 #      then builds NEO4J_AUTH=neo4j/$(NEO4J_PASSWORD) at container start.
-#   3. Sets FUZEPLAN_NEO4J_PASSWORD on izzywdev/FuzePlan so the app's own
+#   3. Sets FUZEPLAN_NEO4J_PASSWORD on FuzeOne/FuzePlan so the app's own
 #      Helm chart / SealedSecrets can seal its bolt-URL credential.
 #   4. Flips the `fuzeplan` serviceNeo4jInstances gate to enabled:true in
 #      helm/fuzeinfra/values-contabo.yaml.
@@ -88,7 +88,7 @@ jobs:
           # Deliver plaintext password to FuzePlan repo as a GH Actions secret
           # so its Helm chart can seal its own NEO4J_URI credential.
           gh secret set FUZEPLAN_NEO4J_PASSWORD \
-            --repo izzywdev/FuzePlan \
+            --repo FuzeOne/FuzePlan \
             --body "$neo4j_password"
 
           # Flip the serviceNeo4jInstances gate in values-contabo.yaml.
@@ -113,9 +113,9 @@ jobs:
                   helm/fuzeinfra/values-contabo.yaml
           git commit -m "feat(neo4j): provision FuzePlan dedicated Neo4j instance (#157)"
           git push origin "$branch"
-          pr_body="Provisions the FuzePlan dedicated Neo4j StatefulSet via GitOps. Adds strict-scoped ciphertext for the fuzeinfra/neo4j-fuzeplan-credentials Secret (key: password) and flips serviceNeo4jInstances[fuzeplan].enabled to true. FUZEPLAN_NEO4J_PASSWORD is now set on izzywdev/FuzePlan. No plaintext secret material. After merge, Argo applies the SealedSecret; the controller decrypts it and the StatefulSet boots with NEO4J_AUTH=neo4j/\$(NEO4J_PASSWORD). Bolt address: bolt://fuzeinfra-neo4j-fuzeplan.fuzeinfra.svc.cluster.local:7687. Resolves the GitOps gap from #157."
+          pr_body="Provisions the FuzePlan dedicated Neo4j StatefulSet via GitOps. Adds strict-scoped ciphertext for the fuzeinfra/neo4j-fuzeplan-credentials Secret (key: password) and flips serviceNeo4jInstances[fuzeplan].enabled to true. FUZEPLAN_NEO4J_PASSWORD is now set on FuzeOne/FuzePlan. No plaintext secret material. After merge, Argo applies the SealedSecret; the controller decrypts it and the StatefulSet boots with NEO4J_AUTH=neo4j/\$(NEO4J_PASSWORD). Bolt address: bolt://fuzeinfra-neo4j-fuzeplan.fuzeinfra.svc.cluster.local:7687. Resolves the GitOps gap from #157."
           gh pr create \
-            --repo izzywdev/FuzeInfra \
+            --repo FuzeOne/FuzeInfra \
             --base main \
             --head "$branch" \
             --title "feat(neo4j): provision FuzePlan dedicated Neo4j instance" \

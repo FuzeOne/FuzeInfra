@@ -164,7 +164,7 @@ def test_current_real_consumers_tfvars_passes():
 
 
 def test_plausible_new_clean_consumer_label_passes(tmp_path):
-    path = _write_tfvars(tmp_path, {"api.fuzecontact": "izzywdev/FuzeContact"})
+    path = _write_tfvars(tmp_path, {"api.fuzecontact": "FuzeOne/FuzeContact"})
     violations = guard.check(
         consumers_path=path,
         ingress_path=INGRESS_YAML,

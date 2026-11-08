@@ -20,12 +20,12 @@
 #
 # Example (manual, public repo):
 #   gh workflow run argocd-register.yml \
-#     -f repo=izzywdev/FuzeFront -f ref=main -f path=deploy/argocd
+#     -f repo=FuzeOne/FuzeFront -f ref=main -f path=deploy/argocd
 #
 # Example (automated dispatch from private repo infra-dispatch.yml):
 #   jq -nc '{event_type:"argocd-register",
 #            client_payload:{repo:"izzywdev/MendysRobotics", argocd_bundle:"<base64-tar>"}}' \
-#     | gh api repos/izzywdev/FuzeInfra/dispatches --input -
+#     | gh api repos/FuzeOne/FuzeInfra/dispatches --input -
 
 name: argocd-register
 
@@ -81,7 +81,7 @@ jobs:
       # reads like the repo does not exist:
       #
       #   remote: Repository not found.
-      #   fatal: repository 'https://github.com/izzywdev/FuzeFinance/' not found
+      #   fatal: repository 'https://github.com/FuzeOne/FuzeFinance/' not found
       #
       # "Repository not found" is what GitHub returns for BOTH "absent" and
       # "present but this token cannot see it" -- it deliberately does not leak
@@ -140,7 +140,7 @@ jobs:
       - name: Check out FuzeInfra policy (validator + infra-held projects)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: izzywdev/FuzeInfra
+          repository: FuzeOne/FuzeInfra
           ref: main
           path: infra
           sparse-checkout: |

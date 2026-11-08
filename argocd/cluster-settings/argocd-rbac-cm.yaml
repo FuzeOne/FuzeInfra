@@ -13,7 +13,7 @@
 # (e.g. `role:readonly`) if you ever want non-admins to browse.
 #
 # The group name `fuzeinfra-admins` is a cross-repo contract — it is created by
-# groups-fuzeinfra-admins.yaml in izzywdev/FuzeFront and is also what Grafana's
+# groups-fuzeinfra-admins.yaml in FuzeOne/FuzeFront and is also what Grafana's
 # roleAttributePath matches. Renaming it here alone silently removes everyone's
 # access.
 #

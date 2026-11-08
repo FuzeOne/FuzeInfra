@@ -13,7 +13,7 @@
 #
 # Usage
 #   ./runners/arc/register-repo.sh \
-#       --repo-url   https://github.com/izzywdev/FuzeFront \
+#       --repo-url   https://github.com/FuzeOne/FuzeFront \
 #       --name       fuzefront \
 #       --app-id     123456 \
 #       --app-install-id  789012 \
@@ -21,7 +21,7 @@
 #
 #   # or: supply an existing k8s secret that already holds the GitHub App creds
 #   ./runners/arc/register-repo.sh \
-#       --repo-url  https://github.com/izzywdev/FuzeFront \
+#       --repo-url  https://github.com/FuzeOne/FuzeFront \
 #       --name      fuzefront \
 #       --secret    arc-runner-github-app   # existing secret in arc-runners
 #
@@ -115,7 +115,7 @@ if $UNINSTALL; then
 fi
 
 if [[ -z "$REPO_URL" ]]; then
-  echo "ERROR: --repo-url is required (e.g. --repo-url https://github.com/izzywdev/FuzeFront)" >&2
+  echo "ERROR: --repo-url is required (e.g. --repo-url https://github.com/FuzeOne/FuzeFront)" >&2
   exit 1
 fi
 

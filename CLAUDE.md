@@ -1,7 +1,7 @@
 # CLAUDE.md — FuzeInfra overlay (L1)
 
 This repo **extends the FuzeSDLC baseline** (L0):
-<https://github.com/izzywdev/FuzeSDLC/blob/main/CLAUDE.baseline.md>.
+<https://github.com/FuzeOne/FuzeSDLC/blob/main/CLAUDE.baseline.md>.
 
 **Precedence:** this `CLAUDE.md` overrides the baseline; the baseline overrides defaults. All generic org policy — governance model, the agent roster + single-responsibility/done-contract, contract-first fan-out, design-system-first frontend, verification protocol, signed-commit/trailer conventions, async-orchestration, cross-repo `@fuze` delegation, and RTK — lives in the baseline and is **not** restated here. Read the baseline first; this file carries only what is specific to FuzeInfra.
 

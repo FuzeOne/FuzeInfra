@@ -11,7 +11,7 @@ metadata:
 spec:
   project: fuzeinfra
   source:
-    repoURL: https://github.com/izzywdev/FuzeInfra.git
+    repoURL: https://github.com/FuzeOne/FuzeInfra.git
     targetRevision: main
     path: helm/fuzeinfra
     helm:

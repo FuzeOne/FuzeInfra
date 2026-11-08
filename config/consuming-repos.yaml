@@ -6,13 +6,13 @@
 # with the missing Helm values entries if any dataTier is undeclared.
 repos:
   - izzywdev/MendysRobotics
-  - izzywdev/FuzeFront
-  - izzywdev/FuzeHub
-  - izzywdev/FuzeAgent
-  - izzywdev/FuzePicker
-  - izzywdev/FuzeMarket
-  - izzywdev/FuzeSales
-  - izzywdev/FuzeSocial
-  - izzywdev/FuzeContact
-  - izzywdev/FuzeService
-  - izzywdev/FuzePlan
+  - FuzeOne/FuzeFront
+  - FuzeOne/FuzeHub
+  - FuzeOne/FuzeAgent
+  - FuzeOne/FuzePicker
+  - FuzeOne/FuzeMarket
+  - FuzeOne/FuzeSales
+  - FuzeOne/FuzeSocial
+  - FuzeOne/FuzeContact
+  - FuzeOne/FuzeService
+  - FuzeOne/FuzePlan

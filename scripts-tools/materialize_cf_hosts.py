@@ -8,7 +8,7 @@ terraform/contabo/materialized/consumers.tfvars deterministically.
 
 Usage (called by cf-hosts-materialize.yml):
   python scripts-tools/materialize_cf_hosts.py \\
-      --repo izzywdev/FuzeKeys \\
+      --repo FuzeOne/FuzeKeys \\
       --ref abc1234 \\
       [--dry-run]
 
@@ -278,7 +278,7 @@ def main() -> int:
     import os
 
     parser = argparse.ArgumentParser(description="FuzeInfra CF hosts materializer")
-    parser.add_argument("--repo", required=True, help="Declaring repo (e.g. izzywdev/FuzeKeys)")
+    parser.add_argument("--repo", required=True, help="Declaring repo (e.g. FuzeOne/FuzeKeys)")
     parser.add_argument("--ref", required=True, help="Git ref to fetch hosts.yaml from")
     parser.add_argument("--dry-run", action="store_true", help="Print diff but do not write")
     args = parser.parse_args()

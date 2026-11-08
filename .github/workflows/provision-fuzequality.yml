@@ -114,7 +114,7 @@ jobs:
             --out "deploy/sealed-secrets/$DB_SECRET.yaml"
 
           gh auth setup-git
-          gh repo clone izzywdev/FuzeFront "$app_checkout" -- --depth 1 --branch master
+          gh repo clone FuzeOne/FuzeFront "$app_checkout" -- --depth 1 --branch master
           destination="$app_checkout/FuzeQuality/deploy/helm/fuzequality/templates"
           mkdir -p "$destination"
 
@@ -151,7 +151,7 @@ jobs:
           git -C "$app_checkout" commit -m 'chore(fuzequality): add sealed bootstrap secrets (#316)'
           git -C "$app_checkout" push origin "$app_branch"
           # shellcheck disable=SC2016 # Markdown backticks are intentionally literal
-          gh pr create --repo izzywdev/FuzeFront --base master --head "$app_branch" \
+          gh pr create --repo FuzeOne/FuzeFront --base master --head "$app_branch" \
             --title 'chore(fuzequality): add sealed bootstrap secrets' \
             --body 'Adds strict namespace/name-scoped ciphertext for the FuzeQuality database/API bootstrap and GHCR pull secret. Both resources use Argo sync wave `-2`. Merge after the companion FuzeInfra database PR is healthy. No plaintext secret material is present.'
 
@@ -173,7 +173,7 @@ jobs:
           git commit -m 'feat(postgres): provision FuzeQuality database (#316)'
           git push origin "$infra_branch"
           # shellcheck disable=SC2016 # Markdown backticks are intentionally literal
-          gh pr create --repo izzywdev/FuzeInfra --base main --head "$infra_branch" \
+          gh pr create --repo FuzeOne/FuzeInfra --base main --head "$infra_branch" \
             --title 'feat(postgres): provision FuzeQuality database' \
             --body 'Adds the strict-scoped ciphertext input and enables the declarative PostgreSQL allocation in the same PR. Argo provisions role `fuzequality_user` and database `fuzequality`. Merge this PR before the companion FuzeFront bootstrap PR. No plaintext secret material is present. Closes #316.'
 

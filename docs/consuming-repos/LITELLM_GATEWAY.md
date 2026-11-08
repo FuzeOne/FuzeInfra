@@ -94,7 +94,7 @@ line in the spend report. `scripts/mint-litellm-ci-key.sh` is the worked example
 kubectl -n fuzeinfra port-forward svc/litellm 4000:4000 &
 export LITELLM_MASTER_KEY=$(kubectl -n fuzeinfra get secret litellm-secret \
     -o jsonpath='{.data.LITELLM_MASTER_KEY}' | base64 -d)
-scripts/mint-litellm-ci-key.sh | gh secret set LITELLM_CI_KEY --repo izzywdev/FuzeInfra
+scripts/mint-litellm-ci-key.sh | gh secret set LITELLM_CI_KEY --repo FuzeOne/FuzeInfra
 ```
 
 Three things to know before minting your own:

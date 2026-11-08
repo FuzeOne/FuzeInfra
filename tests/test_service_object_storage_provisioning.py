@@ -17,7 +17,7 @@ def copied_root(tmp_path):
 
 
 def request():
-    return {"allocationId": "fuzex-artifact-storage", "consumerRepo": "izzywdev/FuzeX"}
+    return {"allocationId": "fuzex-artifact-storage", "consumerRepo": "FuzeOne/FuzeX"}
 
 
 def write_sealed_source(root):

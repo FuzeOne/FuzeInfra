@@ -16,7 +16,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/izzywdev/FuzeHub.git
+    repoURL: https://github.com/FuzeOne/FuzeHub.git
     targetRevision: main
     path: helm/fuzehub
     helm:

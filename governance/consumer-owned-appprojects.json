@@ -21,7 +21,7 @@
   ],
   "projects": {
     "fuzefront": {
-      "repo": "izzywdev/FuzeFront",
+      "repo": "FuzeOne/FuzeFront",
       "path": "deploy/argocd/project.yaml",
       "moved": "#1278, following the #639 decision"
     }

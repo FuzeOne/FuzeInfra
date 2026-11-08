@@ -11,7 +11,7 @@
 # product (deploy/helm/fuzefront) at all.
 #
 # The `fuzefront` AppProject is owned by FuzeFront (#639) at
-# izzywdev/FuzeFront deploy/argocd/project.yaml and registered through
+# FuzeOne/FuzeFront deploy/argocd/project.yaml and registered through
 # argocd-register.yml, whose policy gate (scripts/validate_consumer_appproject.py)
 # enforces FuzeInfra#99 (never a `fuzeinfra` destination) and #629 (Namespace is
 # the only cluster-scoped kind). FuzeInfra no longer holds a copy: two writers
@@ -35,7 +35,7 @@ metadata:
 spec:
   project: fuzefront
   source:
-    repoURL: https://github.com/izzywdev/FuzeFront.git
+    repoURL: https://github.com/FuzeOne/FuzeFront.git
     targetRevision: master
     path: deploy/argocd/applications
     directory:

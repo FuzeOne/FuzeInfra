@@ -121,7 +121,7 @@ jobs:
         if: steps.guard.outputs.ok == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          repository: izzywdev/FuzeSDLC
+          repository: FuzeOne/FuzeSDLC
           ref: ${{ steps.ref.outputs.ref }}
           ssh-key: ${{ secrets.FUZESDLC_DEPLOY_KEY }}
           fetch-depth: 0

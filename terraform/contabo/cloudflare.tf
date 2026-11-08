@@ -52,7 +52,7 @@ locals {
   # `plan` = FuzePlan (plan.fuzefront.com). FuzeFront's portal loads FuzePlan's
   # module-federation remoteEntry.js from here, so it must be public (outside the
   # *.prod Access wildcard); FuzePlan declares its own Traefik Ingress for this
-  # host in izzywdev/FuzePlan. Routing to Traefik is via the catch-all ingress
+  # host in FuzeOne/FuzePlan. Routing to Traefik is via the catch-all ingress
   # rule below — no per-host tunnel rule is needed.
   public_vanity_hosts = ["app", "plan", "fuzehub"]
 }
@@ -177,7 +177,7 @@ resource "cloudflare_record" "website_apex" {
 # Pointing `www` at the tunnel sends it to Traefik via the catch-all
 # ingress_rule above, where the fuzefront-website Ingress claims BOTH hosts and
 # its nginx returns `301 https://fuzefront.com$request_uri` for the `www` Host —
-# so the apex is the single canonical origin (izzywdev/FuzeFront#1201).
+# so the apex is the single canonical origin (FuzeOne/FuzeFront#1201).
 #
 # ORDERING — the host must be CLAIMED before it is ROUTED. Traefik answers 404
 # for a host no Ingress claims, so flipping this record while FuzeFront's
@@ -809,7 +809,7 @@ locals {
     # below, which is what lets the duplicate-tile reconciler and Ingress
     # removal (helm/fuzeinfra/templates/ingress.yaml) stay in sync: no tile, no
     # published host, no dangling Access-app coverage to reconcile.
-    # FuzeFront admin UIs (izzywdev/FuzeFront). Unleash lands UNDER the *.prod
+    # FuzeFront admin UIs (FuzeOne/FuzeFront). Unleash lands UNDER the *.prod
     # wildcard, so the catch-all tunnel rule → Traefik, the *.prod CNAME, and the
     # *.prod Access app already cover routing/DNS/gating — no per-host tunnel
     # rule, CNAME, or Access app is needed. These bookmarks just add the launcher
@@ -884,7 +884,7 @@ resource "cloudflare_zero_trust_access_application" "launcher_bookmark" {
 # The launcher showed Unleash twice and Authentik twice — once from the bookmark
 # above (correct logo) and once from a `type = "self_hosted"` Access app a
 # consumer repo created out-of-band with `app_launcher_visible: true` and no
-# logo_url. izzywdev/FuzeFront's runbook records doing exactly that for
+# logo_url. FuzeOne/FuzeFront's runbook records doing exactly that for
 # unleash.prod.fuzefront.com (app 514f8a21-3793-4726-858e-819556fbe346).
 #
 # Terraform cannot destroy what it never created and what is not in state, and

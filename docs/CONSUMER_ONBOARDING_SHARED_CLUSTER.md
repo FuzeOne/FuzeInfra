@@ -27,7 +27,7 @@ Instead:
   default 404. The symptom is deceptive — **DNS resolves, TLS works, HTTP returns
   404** — and reads exactly like a missing tunnel route, which sends people hunting
   for a `Tunnel:Edit` API token they do not need. It is the entrypoint.
-  (Cost FuzeHub a round trip: izzywdev/FuzeHub#66.)
+  (Cost FuzeHub a round trip: FuzeOne/FuzeHub#66.)
 - Per-product hostnames route through the **existing** tunnel; DNS is proxied CNAMEs
   in the product's own Cloudflare zone via the generic `modules/cloudflare-dns`
   Terraform module — **no product hostnames are hard-coded in FuzeInfra** (the
@@ -195,7 +195,7 @@ changes hands, and no human has to relay output back to you. It reuses the
 nothing new to mint:
 
 ```bash
-gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
   -f event_type=cluster-query \
   -f 'client_payload[kubectl_args]=-n <my-namespace> get pods -o wide'
 ```

@@ -50,7 +50,7 @@
 #     (Contents:write on FuzeInfra — no new credential to mint).
 #
 # Payload / inputs:
-#   repo   — owner/name of the consumer repo (e.g. "izzywdev/FuzeHub")
+#   repo   — owner/name of the consumer repo (e.g. "FuzeOne/FuzeHub")
 #   action — "install" | "uninstall"
 #
 # AUTHORIZATION: `repo` is checked against config/arc-register-allowlist.json
@@ -82,13 +82,13 @@
 #                  dispatch-back.
 #
 # Example (operator, manual):
-#   gh workflow run arc-register.yml --repo izzywdev/FuzeInfra \
-#     -f repo=izzywdev/FuzeHub -f action=install
+#   gh workflow run arc-register.yml --repo FuzeOne/FuzeInfra \
+#     -f repo=FuzeOne/FuzeHub -f action=install
 #
 # Example (consumer dispatch — see docs/consuming-repos/ARC_REGISTRATION.md):
-#   gh api --method POST repos/izzywdev/FuzeInfra/dispatches \
+#   gh api --method POST repos/FuzeOne/FuzeInfra/dispatches \
 #     -f event_type=arc-register \
-#     -f 'client_payload[repo]=izzywdev/FuzeHub' \
+#     -f 'client_payload[repo]=FuzeOne/FuzeHub' \
 #     -f 'client_payload[action]=install'
 
 name: arc-register
@@ -296,7 +296,7 @@ jobs:
       # Best-effort report back to the requesting repo. Consumer repos are not
       # required to listen for this event — it is a courtesy, not a contract —
       # so failure here never fails the job. The job summary above (and the
-      # run's own conclusion, visible via `gh run list --repo izzywdev/FuzeInfra
+      # run's own conclusion, visible via `gh run list --repo FuzeOne/FuzeInfra
       # --workflow=arc-register.yml`) is the guaranteed, always-present result.
       - name: Report result back to the requesting repo (best effort)
         if: always() && github.event_name == 'repository_dispatch'

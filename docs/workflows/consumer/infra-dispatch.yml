@@ -63,4 +63,4 @@ jobs:
             deploy/terraform/requests.json)
 
           echo "Dispatching: $BODY"
-          echo "$BODY" | gh api --method POST repos/izzywdev/FuzeInfra/dispatches --input -
+          echo "$BODY" | gh api --method POST repos/FuzeOne/FuzeInfra/dispatches --input -

@@ -25,7 +25,7 @@ The tooling for this lives in FuzeInfra:
 ## What I need you to do
 
 1. Add a `.github/workflows/arc-register.yml` to THIS repo by copying the
-   template from FuzeInfra (https://github.com/izzywdev/FuzeInfra, path
+   template from FuzeInfra (https://github.com/FuzeOne/FuzeInfra, path
    runners/arc/workflow-template/arc-register.yml) and filling in:
      SCALE_SET_NAME: "<REPO_SLUG>"   # e.g. "fuzefront" — this becomes runs-on:
      USE_EXISTING_SECRET: "arc-runner-github-app"

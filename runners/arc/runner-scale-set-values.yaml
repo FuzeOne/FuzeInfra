@@ -23,7 +23,7 @@
 
 # ---- GitHub target ----------------------------------------------------------
 # Repo-level URL — required for personal accounts (org-level API not available).
-githubConfigUrl: "https://github.com/izzywdev/FuzeInfra"
+githubConfigUrl: "https://github.com/FuzeOne/FuzeInfra"
 
 # Name of the Kubernetes Secret containing GitHub App credentials.
 # Create it from runners/arc/github-secret.yaml before installing.

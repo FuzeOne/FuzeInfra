@@ -18,7 +18,7 @@ There are three possible decisions:
 
 Usage:
     validate_infra_request.py --whitelist config/infra-request-whitelist.json \
-        --request request.json --repo izzywdev/FuzeFront [--github-output "$GITHUB_OUTPUT"]
+        --request request.json --repo FuzeOne/FuzeFront [--github-output "$GITHUB_OUTPUT"]
 
 request.json is the dispatch client_payload, expected to contain a top-level
 "requests" list of {name, product_id, region, role, labels} objects.

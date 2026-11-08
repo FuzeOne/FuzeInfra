@@ -21,7 +21,7 @@
 #   APISERVER=https://1.2.3.4:6443 scripts/generate-claude-handler-kubeconfig.sh
 #
 # Then:
-#   scripts/generate-claude-handler-kubeconfig.sh | gh secret set KUBE_CONFIG --repo izzywdev/FuzeInfra
+#   scripts/generate-claude-handler-kubeconfig.sh | gh secret set KUBE_CONFIG --repo FuzeOne/FuzeInfra
 # =============================================================================
 set -euo pipefail
 

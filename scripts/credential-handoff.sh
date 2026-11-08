@@ -282,7 +282,7 @@ do_publish() {
       git add "$t_path"
       {
         printf 'chore(secrets): re-seal %s from FuzeInfra hand-off (%s)\n\n' "$t_key" "$id"
-        printf 'Automated credential hand-off from izzywdev/FuzeInfra (FuzeInfra#510).\n\n'
+        printf 'Automated credential hand-off from FuzeOne/FuzeInfra (FuzeInfra#510).\n\n'
         printf 'Only the encrypted `%s` entry changed; every other key in this\n' "$t_key"
         printf 'SealedSecret is byte-identical (kubeseal --merge-into).\n\n'
         printf 'The value was sealed --scope strict for %s/%s, so this ciphertext\n' "$t_ns" "$t_name"
@@ -302,7 +302,7 @@ do_publish() {
     if [ "$sub" != 0 ]; then note "   FAIL: could not push branch to $consumer"; rc=1; continue; fi
 
     {
-      printf 'Automated credential hand-off from `izzywdev/FuzeInfra` (FuzeInfra#510).\n\n'
+      printf 'Automated credential hand-off from `FuzeOne/FuzeInfra` (FuzeInfra#510).\n\n'
       printf -- '- Hand-off id: `%s`\n' "$id"
       printf -- '- Target scope: `%s/%s`, key `%s` (`--scope strict`)\n' "$t_ns" "$t_name" "$t_key"
       printf -- '- Manifest: `%s` (updated with `kubeseal --merge-into`; all other keys untouched)\n' "$t_path"

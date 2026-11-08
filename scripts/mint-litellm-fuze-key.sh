@@ -15,7 +15,7 @@
 #   kubectl -n fuzeinfra port-forward svc/litellm 4000:4000 &
 #   export LITELLM_MASTER_KEY=$(kubectl -n fuzeinfra get secret litellm-secret \
 #       -o jsonpath='{.data.LITELLM_MASTER_KEY}' | base64 -d)
-#   scripts/mint-litellm-fuze-key.sh | gh secret set LITELLM_FUZE_KEY --repo izzywdev/FuzeInfra
+#   scripts/mint-litellm-fuze-key.sh | gh secret set LITELLM_FUZE_KEY --repo FuzeOne/FuzeInfra
 #
 # The key is printed to STDOUT and nothing else is — every diagnostic goes to
 # stderr — so it pipes straight into `gh secret set` without landing in a file,
@@ -140,7 +140,7 @@ fi
 {
   echo ""
   echo "Minted. Set it as the repo secret:"
-  echo "  scripts/mint-litellm-fuze-key.sh | gh secret set LITELLM_FUZE_KEY --repo izzywdev/FuzeInfra"
+  echo "  scripts/mint-litellm-fuze-key.sh | gh secret set LITELLM_FUZE_KEY --repo FuzeOne/FuzeInfra"
   echo ""
   echo "Propagate to every consuming repo that uses @fuze (FuzeSDLC propagation"
   echo "sets this as a required secret in docs/workflows/standard/fuze.yml)."

@@ -6,7 +6,7 @@ metadata:
 spec:
   description: FuzeCall product (consumer of FuzeInfra) — may deploy ONLY into its own namespace.
   sourceRepos:
-    - https://github.com/izzywdev/FuzeCall.git
+    - https://github.com/FuzeOne/FuzeCall.git
   destinations:
     - namespace: fuzecall
       server: https://kubernetes.default.svc

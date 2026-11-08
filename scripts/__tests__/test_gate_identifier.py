@@ -76,7 +76,7 @@ class TestNamespaceCheck(unittest.TestCase):
 
     def test_product_local_prefix_must_be_namespaced(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales", identity={"namespace": "sales"})
+            repo.manifest(repo="FuzeOne/FuzeSales", identity={"namespace": "sales"})
             repo.registry(quote="quo")
             repo.commit()
             result = run_gate(repo.root, "--namespace")
@@ -86,7 +86,7 @@ class TestNamespaceCheck(unittest.TestCase):
 
     def test_namespaced_prefix_passes(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales", identity={"namespace": "sales"})
+            repo.manifest(repo="FuzeOne/FuzeSales", identity={"namespace": "sales"})
             repo.registry(quote="sales_quo")
             repo.commit()
             result = run_gate(repo.root, "--namespace")
@@ -96,7 +96,7 @@ class TestNamespaceCheck(unittest.TestCase):
         """The collision this whole tier exists to prevent: FuzeHub minting `usr`
         would produce ids indistinguishable from FuzeFront's own users."""
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeHub", identity={"namespace": "hub"})
+            repo.manifest(repo="FuzeOne/FuzeHub", identity={"namespace": "hub"})
             repo.registry(user="usr")
             repo.commit()
             result = run_gate(repo.root, "--namespace")
@@ -105,7 +105,7 @@ class TestNamespaceCheck(unittest.TestCase):
 
     def test_owning_repo_may_mint_its_spine_prefix(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeFront", identity={"namespace": "front"})
+            repo.manifest(repo="FuzeOne/FuzeFront", identity={"namespace": "front"})
             repo.registry(user="usr", organization="org")
             repo.commit()
             result = run_gate(repo.root, "--namespace")
@@ -115,7 +115,7 @@ class TestNamespaceCheck(unittest.TestCase):
         """Never derived from the directory name — a repo rename would silently
         orphan every id already issued."""
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales")
+            repo.manifest(repo="FuzeOne/FuzeSales")
             repo.registry(quote="sales_quo")
             repo.commit()
             result = run_gate(repo.root, "--namespace")
@@ -124,7 +124,7 @@ class TestNamespaceCheck(unittest.TestCase):
 
     def test_malformed_namespace_is_rejected(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales", identity={"namespace": "Sales_X"})
+            repo.manifest(repo="FuzeOne/FuzeSales", identity={"namespace": "Sales_X"})
             repo.registry(quote="sales_quo")
             repo.commit()
             result = run_gate(repo.root, "--namespace")
@@ -132,7 +132,7 @@ class TestNamespaceCheck(unittest.TestCase):
 
     def test_repo_with_no_registry_is_not_penalised(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales")
+            repo.manifest(repo="FuzeOne/FuzeSales")
             repo.write("src/app.ts", "export const x = 1\n")
             repo.commit()
             result = run_gate(repo.root, "--namespace")
@@ -152,7 +152,7 @@ class TestAdoptionCheck(unittest.TestCase):
 
     def test_minting_without_the_package_fails(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales")
+            repo.manifest(repo="FuzeOne/FuzeSales")
             repo.write("package.json", '{"name":"sales","dependencies":{"express":"^4.0.0"}}')
             repo.write("src/quote.ts", self.MINTS)
             repo.commit()
@@ -162,7 +162,7 @@ class TestAdoptionCheck(unittest.TestCase):
 
     def test_declaring_the_node_package_passes(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales")
+            repo.manifest(repo="FuzeOne/FuzeSales")
             repo.write(
                 "package.json",
                 '{"name":"sales","dependencies":{"@izzywdev/fuzefront-identity":"^0.1.0"}}',
@@ -174,7 +174,7 @@ class TestAdoptionCheck(unittest.TestCase):
 
     def test_declaring_the_python_package_passes(self):
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales")
+            repo.manifest(repo="FuzeOne/FuzeSales")
             repo.write("package.json", '{"name":"sales"}')
             repo.write("requirements.txt", "fuzefront-identity==0.1.0\n")
             repo.write("src/quote.ts", self.MINTS)
@@ -216,7 +216,7 @@ class TestAdoptionUsage(unittest.TestCase):
     def test_declared_but_unimported_fails_when_the_repo_has_ratcheted(self):
         with SyntheticRepo() as repo:
             repo.manifest(
-                repo="izzywdev/FuzeSales",
+                repo="FuzeOne/FuzeSales",
                 identity={"namespace": "sales", "enforceUsage": True},
             )
             repo.write("package.json", self.DECLARES)
@@ -231,7 +231,7 @@ class TestAdoptionUsage(unittest.TestCase):
         dependency — the same 'enforcement ahead of adoption' mistake that produced
         the inert declarations. Each repo opts in."""
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales", identity={"namespace": "sales"})
+            repo.manifest(repo="FuzeOne/FuzeSales", identity={"namespace": "sales"})
             repo.write("package.json", self.DECLARES)
             repo.write("src/quote.ts", self.MINTS)
             repo.commit()
@@ -242,7 +242,7 @@ class TestAdoptionUsage(unittest.TestCase):
     def test_a_real_import_satisfies_the_ratchet(self):
         with SyntheticRepo() as repo:
             repo.manifest(
-                repo="izzywdev/FuzeSales",
+                repo="FuzeOne/FuzeSales",
                 identity={"namespace": "sales", "enforceUsage": True},
             )
             repo.write("package.json", self.DECLARES)
@@ -260,7 +260,7 @@ class TestAdoptionUsage(unittest.TestCase):
     def test_a_python_import_satisfies_the_ratchet(self):
         with SyntheticRepo() as repo:
             repo.manifest(
-                repo="izzywdev/FuzePlan",
+                repo="FuzeOne/FuzePlan",
                 identity={"namespace": "plan", "enforceUsage": True},
             )
             repo.write("requirements.txt", "fuzefront-identity==1.0.0\n")
@@ -285,7 +285,7 @@ class TestAdoptionUsage(unittest.TestCase):
         would be exactly as satisfiable-by-declaration as the one it replaces."""
         with SyntheticRepo() as repo:
             repo.manifest(
-                repo="izzywdev/FuzeSales",
+                repo="FuzeOne/FuzeSales",
                 identity={
                     "namespace": "sales",
                     "enforceUsage": True,
@@ -314,7 +314,7 @@ class TestFlagHandling(unittest.TestCase):
         """A typo'd flag used to run NOTHING and print OK — indistinguishable
         from a clean tree, which is the worst possible failure for a gate."""
         with SyntheticRepo() as repo:
-            repo.manifest(repo="izzywdev/FuzeSales")
+            repo.manifest(repo="FuzeOne/FuzeSales")
             repo.commit()
             result = run_gate(repo.root, "--namespaces")
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)

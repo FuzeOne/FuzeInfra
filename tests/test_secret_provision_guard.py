@@ -106,7 +106,7 @@ def run_guard(tmp_path, allowlist=None, **env) -> subprocess.CompletedProcess:
         "COPY_FROM": "",
         "LENGTH": "48",
         "TARGET_REPO": "",
-        "SELF_REPO": "izzywdev/FuzeInfra",
+        "SELF_REPO": "FuzeOne/FuzeInfra",
         "GITHUB_ENV": str(github_env),
         "PATH": "/usr/bin:/bin:/usr/local/bin",
     }
@@ -439,7 +439,7 @@ def test_allowlist_file_is_well_formed():
     targets = data["targets"]
     assert targets, "an empty allowlist would make every dispatch fail"
     slugs = [e["repo"] for e in targets]
-    assert "izzywdev/FuzeInfra" in slugs, (
+    assert "FuzeOne/FuzeInfra" in slugs, (
         "this repository must stay listed — it is the default when target_repo is omitted"
     )
     assert len(slugs) == len({s.lower() for s in slugs}), f"duplicate entries: {slugs}"
@@ -457,7 +457,7 @@ def test_allowlist_file_is_well_formed():
 def test_target_defaults_to_this_repository(tmp_path):
     r = run_guard(tmp_path, SECRET_NAME="SOME_SECRET", SOURCE="verify", TARGET_REPO="")
     assert r.returncode == 0, r.stdout + r.stderr
-    assert "izzywdev/FuzeInfra" in r.stdout
+    assert "FuzeOne/FuzeInfra" in r.stdout
 
 
 @pytest.mark.parametrize(
@@ -480,14 +480,14 @@ def test_bad_or_unlisted_targets_blocked(tmp_path, target):
 def test_listed_target_allowed_case_insensitively(tmp_path):
     """GitHub slugs are case-insensitive, so an allowlist that a lowercase spelling
     slips past would be a bypass rather than a nicety."""
-    ok(tmp_path, SECRET_NAME="SOME_SECRET", SOURCE="verify", TARGET_REPO="izzywdev/fuzeinfra")
+    ok(tmp_path, SECRET_NAME="SOME_SECRET", SOURCE="verify", TARGET_REPO="fuzeone/fuzeinfra")
 
 
 # An allowlist that DOES list a foreign repo, so the copy rule is tested on its own
 # terms rather than being masked by an allowlist rejection.
 TWO_TARGETS = [
-    {"repo": "izzywdev/FuzeInfra", "why": "self"},
-    {"repo": "izzywdev/FuzeFront", "why": "test fixture: a genuinely allowlisted peer"},
+    {"repo": "FuzeOne/FuzeInfra", "why": "self"},
+    {"repo": "FuzeOne/FuzeFront", "why": "test fixture: a genuinely allowlisted peer"},
 ]
 
 
@@ -499,26 +499,26 @@ def test_copy_is_refused_cross_repo_even_when_the_target_is_allowlisted(tmp_path
     here IS listed, so an allowlist rejection cannot be what makes this pass.
     """
     blocked(tmp_path, allowlist=TWO_TARGETS, SECRET_NAME="NEW_NAME", SOURCE="copy",
-            COPY_FROM="OLD_NAME", TARGET_REPO="izzywdev/FuzeFront")
+            COPY_FROM="OLD_NAME", TARGET_REPO="FuzeOne/FuzeFront")
 
 
 def test_generate_is_allowed_to_that_same_allowlisted_peer(tmp_path):
     """Pins that the refusal above is the COPY rule, not the target being foreign."""
     ok(tmp_path, allowlist=TWO_TARGETS, SECRET_NAME="SOME_SECRET", SOURCE="generate",
-       TARGET_REPO="izzywdev/FuzeFront")
+       TARGET_REPO="FuzeOne/FuzeFront")
 
 
 def test_verify_is_allowed_to_that_same_allowlisted_peer(tmp_path):
     ok(tmp_path, allowlist=TWO_TARGETS, SECRET_NAME="SOME_SECRET", SOURCE="verify",
-       TARGET_REPO="izzywdev/FuzeFront")
+       TARGET_REPO="FuzeOne/FuzeFront")
 
 
 def test_copy_still_allowed_same_repo(tmp_path):
     ok(tmp_path, SECRET_NAME="NEW_NAME", SOURCE="copy", COPY_FROM="OLD_NAME",
-       TARGET_REPO="izzywdev/FuzeInfra")
+       TARGET_REPO="FuzeOne/FuzeInfra")
 
 
 def test_protected_names_blocked_for_every_target(tmp_path):
     """The PROTECTED list is not weakened by pointing somewhere else."""
     blocked(tmp_path, SECRET_NAME="SECRETS_ADMIN_PAT", SOURCE="generate",
-            TARGET_REPO="izzywdev/FuzeInfra")
+            TARGET_REPO="FuzeOne/FuzeInfra")

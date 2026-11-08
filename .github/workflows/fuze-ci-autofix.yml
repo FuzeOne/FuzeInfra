@@ -6,7 +6,7 @@ name: Fuze Auto-Fix CI
 # rename, not a permanent dual-track split like those pairs.
 #
 # SELF-CONTAINED (inlined) as of the FuzeSDLC#758 fix. This job used to be a `uses:`
-# call into izzywdev/FuzeSDLC's reusable-claude-ci-autofix.yml. A PUBLIC repo cannot
+# call into FuzeOne/FuzeSDLC's reusable-claude-ci-autofix.yml. A PUBLIC repo cannot
 # resolve a reusable workflow hosted in a PRIVATE repo -- FuzeSDLC is private -- so on
 # every oss-public consumer (FuzeInfra, FuzeFront, FuzeAgent, FuzeKeys, FuzeX) this
 # call failed at STARTUP ("workflow was not found") and auto-fix had never run once.
